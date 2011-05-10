@@ -1,0 +1,134 @@
+#include "gputests.h"
+
+/**************************************************************************************
+ * Test10 [memory stress test]
+ *
+ * Stress memory as much as we can. A random pattern is generated and a kernel of large grid size
+ * and block size is launched to set all memory to the pattern. A new read and write kernel is launched
+ * immediately after the previous write kernel to check if there is any errors in memory and set the
+ * memory to the compliment. This process is repeated for 1000 times for one pattern. The kernel is
+ * written as to achieve the maximum bandwidth between the global memory and GPU.
+ * This will increase the chance of catching software error. In practice, we found this test quite useful
+ * to flush hardware errors as well.
+ * 
+ */
+
+#define TYPE unsigned long
+__global__ void test10_kernel_write(char* ptr, int memsize, TYPE p1)
+{
+    int i;
+    int avenumber = memsize/(gridDim.x*gridDim.y);
+    TYPE* mybuf = (TYPE*)(ptr + blockIdx.x* avenumber);
+    int n = avenumber/(blockDim.x*sizeof(TYPE));
+
+    for(i=0;i < n;i++){
+        int index = i*blockDim.x + threadIdx.x;
+        mybuf[index]= p1;
+    }
+    int index = n*blockDim.x + threadIdx.x;
+    if (index*sizeof(TYPE) < avenumber){
+        mybuf[index] = p1;
+    }
+    
+    return;
+}
+
+__global__ void test10_kernel_readwrite(char* ptr, int memsize, TYPE p1, TYPE p2,  unsigned int* err,
+					unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read)
+{
+    int i;
+    int avenumber = memsize/(gridDim.x*gridDim.y);
+    TYPE* mybuf = (TYPE*)(ptr + blockIdx.x* avenumber);
+    int n = avenumber/(blockDim.x*sizeof(TYPE));
+    TYPE localp;
+
+    for(i=0;i < n;i++){
+        int index = i*blockDim.x + threadIdx.x;
+        localp = mybuf[index];
+        if (localp != p1){
+	    RECORD_ERR(err, &mybuf[index], p1, localp);
+	}
+	mybuf[index] = p2;
+    }
+    int index = n*blockDim.x + threadIdx.x;
+    if (index*sizeof(TYPE) < avenumber){
+	localp = mybuf[index];
+	if (localp!= p1){
+	    RECORD_ERR(err, &mybuf[index], p1, localp);
+	}
+	mybuf[index] = p2;
+    }
+    
+    return;
+}
+
+
+#define STRESS_BLOCKSIZE 64
+#define STRESS_GRIDSIZE (1024*32)
+
+unsigned long
+get_random_num_long(void)
+{
+    /*struct timeval t0;
+    if (gettimeofday(&t0, NULL) !=0){
+	fprintf(stderr, "ERROR: gettimeofday() failed\n");
+	exit(ERR_GENERAL);
+    }*/
+    
+    //unsigned int seed= (unsigned int)t0.tv_sec;
+	unsigned int seed = (unsigned int) GetTickCount();
+    srand(seed);    
+ 
+    unsigned int a = rand();
+    unsigned int b = rand();
+    
+    unsigned long ret =  ((unsigned long)a) << 32;
+    ret |= ((unsigned long)b);
+    
+    return ret;
+}
+
+int test10(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err_count, unsigned long* err_addr,
+		  unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term)
+{
+    TYPE p1;
+    /*if (global_pattern_long){
+	p1 = global_pattern_long;
+    }else{*/
+	p1 = get_random_num_long();
+    //}
+    TYPE p2 = ~p1;
+    cudaStream_t stream;
+    cudaEvent_t start, stop;
+    cudaStreamCreate(&stream);
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    
+    int n = num_iterations;
+    float elapsedtime;
+    dim3 gridDim(STRESS_GRIDSIZE);
+    dim3 blockDim(STRESS_BLOCKSIZE);       
+    cudaEventRecord(start, stream);
+
+    //PRINTF("Test10 with pattern=0x%lx\n", p1);
+    test10_kernel_write<<<gridDim, blockDim, 0, stream>>>(ptr, tot_num_blocks*BLOCKSIZE, p1); SYNC_CUERR;	
+    for(int i =0;i < n ;i ++){
+	test10_kernel_readwrite<<<gridDim, blockDim, 0, stream>>>(ptr, tot_num_blocks*BLOCKSIZE, p1, p2,
+								  err_count, err_addr, err_expect, err_current, err_second_read); SYNC_CUERR;
+	p1 = ~p1;
+	p2 = ~p2;
+	
+    }    
+    cudaEventRecord(stop, stream);
+    cudaEventSynchronize(stop);
+    //error_checking("test10[Memory stress test]",  0);	
+    cudaEventElapsedTime(&elapsedtime, start, stop);
+    //DEBUG_PRINTF("test10: elapsedtime=%f, bandwidth=%f GB/s\n", elapsedtime, (2*n+1)*tot_num_blocks/elapsedtime);
+    
+   cudaEventDestroy(start);    
+   cudaEventDestroy(stop);    
+   
+   cudaStreamDestroy(stream);
+    
+    return cudaSuccess;
+}

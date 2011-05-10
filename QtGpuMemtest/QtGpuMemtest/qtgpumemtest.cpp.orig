@@ -1,0 +1,227 @@
+#include "qtgpumemtest.h"
+
+QtGpuMemtest::QtGpuMemtest(QWidget *parent, Qt::WFlags flags)
+	: QMainWindow(parent, flags), deviceCount(0), devices(0), deviceWidgets(0)
+{
+	ui.setupUi(this);
+
+	// Create tests
+	tests.push_back(TestInfo(QString("Test0 [Walking 1 bit]"),					QString("0"),		test0,	true)); 
+	tests.push_back(TestInfo(QString("Test1 [Own address tests]"),				QString("1"),		test1,	true)); 
+	tests.push_back(TestInfo(QString("Test2 [Moving inversions, ones&zeros]"),	QString("2"),		test2,	true));
+	tests.push_back(TestInfo(QString("Test3 [Moving inversions, 8 bit pat]"),	QString("3"),		test3,	true));
+	tests.push_back(TestInfo(QString("Test4 [Moving inversions, random pat]"),	QString("4"),		test4,	true));
+	tests.push_back(TestInfo(QString("Test5 [Block move, 64 moves]"),			QString("5"),		test5,	true));
+	tests.push_back(TestInfo(QString("Test6 [Moving inversions, 32 bit pat]"),	QString("6"),		test6,	true));
+	tests.push_back(TestInfo(QString("Test7 [Random number sequence]"),			QString("7"),		test7,	true));
+	tests.push_back(TestInfo(QString("Test8 [Modulo 20, random pattern]"),		QString("8"),		test8,	true));
+	tests.push_back(TestInfo(QString("Test9 [Bit fade test]"),					QString("9"),		test9,	false));
+	tests.push_back(TestInfo(QString("Test10 [Stress test]"),					QString("Stress"),	test10,	false));
+
+	connect(ui.actionRelist, SIGNAL(triggered()), this, SLOT(relistDevices()));
+	connect(ui.actionCheckAll, SIGNAL(triggered()), this, SLOT(checkAllDevices()));
+	connect(ui.actionCheckNone, SIGNAL(triggered()), this, SLOT(checkNoDevices()));
+	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(exit()));
+	connect(ui.actionAbout, SIGNAL(triggered()), this, SLOT(about()));
+	connect(ui.actionStartChecked, SIGNAL(triggered()), this, SLOT(startChecked()));
+	connect(ui.actionStopAll, SIGNAL(triggered()), this, SLOT(stopAll()));
+	connect(ui.actionCopy_Results_to_Clipboard, SIGNAL(triggered()), this, SLOT(copyResults()));
+	connect(ui.actionExport_Results, SIGNAL(triggered()), this, SLOT(exportResults()));
+
+	ui.actionRelist->trigger();
+}
+
+QtGpuMemtest::~QtGpuMemtest()
+{
+	clearDevices();
+}
+
+//
+// QtGpuMemtest Slots
+//
+
+void QtGpuMemtest::about()
+{
+	QMessageBox::about(this, QString("CUDA GPU Memtest"), 
+		QString("A GPU memory test utility for NVIDIA and AMD GPUs using well established patterns "
+				"from memtest86/memtest86+ as well as additional stress tests. The tests are designed "
+				"to find hardware and soft errors. The code is written in CUDA and OpenCL. "
+				"\r\n\r\nhttp://cudagpumemtest.sf.net"));
+}
+
+void QtGpuMemtest::exit()
+{
+	this->close();
+}
+
+void QtGpuMemtest::clearDevices()
+{
+	// Clear listbox.
+	ui.listWidget->clear();
+
+	if(deviceWidgets) delete [] deviceWidgets;
+	if(devices) delete [] devices;
+}
+
+void QtGpuMemtest::checkAllDevices()
+{
+	for(int i = 0; i < deviceCount; i++)
+	{
+		deviceWidgets[i].setCheckStart(1);
+	}
+}
+
+void QtGpuMemtest::checkNoDevices()
+{
+	for(int i = 0; i < deviceCount; i++)
+	{
+		deviceWidgets[i].setCheckStart(0);
+	}
+}
+
+void QtGpuMemtest::relistDevices()
+{
+	clearDevices();
+	cudaGetDeviceCount(&deviceCount);
+
+	if(deviceCount <= 0)
+	{
+		// No devices found.
+		ui.listWidget->addItem("No CUDA devices found.");
+		return;
+	}
+
+	devices = new cudaDeviceProp[deviceCount];
+	deviceWidgets = new GpuDisplayWidget[deviceCount];
+
+	for(int i = 0; i < deviceCount; i++)
+	{
+		int error = cudaGetDeviceProperties(&devices[i], i);
+
+		if(error == cudaSuccess)
+		{
+			char gpuString[256] = "";
+			char gpuMemoryString[256] = "";
+
+			sprintf_s(gpuString, sizeof(gpuString), "GPU #%d - %s", i, devices[i].name);
+			sprintf_s(gpuMemoryString, sizeof(gpuMemoryString), "%.1f MiB", devices[i].totalGlobalMem / (float)(1024 * 1024));
+
+			deviceWidgets[i].setTests(tests);
+
+			deviceWidgets[i].setGpuName(QString(gpuString));
+			deviceWidgets[i].setGpuMemory(QString(gpuMemoryString));	
+			deviceWidgets[i].setFont(QFont("Arial", 14));
+			deviceWidgets[i].setIndex(i);
+
+			connect(&deviceWidgets[i], SIGNAL(testStarted(const int)), this, SLOT(startTest(const int)));
+
+			ui.listWidget->addItem("");
+			ui.listWidget->item(ui.listWidget->count() - 1)->setSizeHint(QSize(0,130));
+			ui.listWidget->setItemWidget(ui.listWidget->item(ui.listWidget->count() - 1), &deviceWidgets[i]);
+		}
+	}
+}
+
+void QtGpuMemtest::startTest(const int index)
+{
+	//QtGpuThread * test = new QtGpuThread();
+
+	//connect(test, SIGNAL(blockingError(int, int, int, QString, QString)), this, SLOT(handleBlockingError(int, int, int, QString, QString)));
+	//connect(test, SIGNAL(nonBlockingError(int, int, QString, QString)), this, SLOT(handleNonBlockingError(int, int, QString, QString)));
+	//connect(test, SIGNAL(progress(int, int, int)), this, SLOT(handleProgress(int, int, int)));
+
+	//test->setDevice(index);
+	//test->start();
+
+	//testThreads[index] = test;
+}
+
+void QtGpuMemtest::startChecked()
+{
+	for(int i = 0; i < ui.listWidget->count(); i++)
+	{
+		QListWidgetItem* thisItem = ui.listWidget->item(i);
+		GpuDisplayWidget* thisWidget = (GpuDisplayWidget*) ui.listWidget->itemWidget(thisItem);
+
+		if(thisWidget->isChecked())
+		{
+			thisWidget->startTestOnce();
+		}
+	}
+}
+
+void QtGpuMemtest::stopAll()
+{
+	for(int i = 0; i < ui.listWidget->count(); i++)
+	{
+		QListWidgetItem* thisItem = ui.listWidget->item(i);
+		GpuDisplayWidget* thisWidget = (GpuDisplayWidget*) ui.listWidget->itemWidget(thisItem);
+
+		thisWidget->endTest();
+	}
+}
+
+void QtGpuMemtest::copyResults()
+{
+	QString masterOutput;
+	QTextStream sout(&masterOutput);
+
+	for(int i = 0; i < ui.listWidget->count(); i++)
+	{
+		QListWidgetItem* thisItem = ui.listWidget->item(i);
+		GpuDisplayWidget* thisWidget = (GpuDisplayWidget*) ui.listWidget->itemWidget(thisItem);
+
+		sout << ">>> " << thisWidget->getName() << "\r\n\r\n" << thisWidget->getLog() << "\r\n\r\n";
+	}
+
+	QClipboard *cb = QApplication::clipboard();
+	cb->setText(masterOutput);
+}
+
+void QtGpuMemtest::exportResults()
+{
+	// Select file
+	QString fileName = QFileDialog::getSaveFileName(this, tr("Export Results As..."));
+	QFile fout(fileName);
+
+	if(!fout.open(QIODevice::ReadWrite | QIODevice::Text))
+	{
+		QMessageBox::warning(this, tr("Error"), tr("Could not export file! Check if file is open elsewhere."));
+		return;
+	}
+
+	QTextStream sout(&fout);
+
+	for(int i = 0; i < ui.listWidget->count(); i++)
+	{
+		QListWidgetItem* thisItem = ui.listWidget->item(i);
+		GpuDisplayWidget* thisWidget = (GpuDisplayWidget*) ui.listWidget->itemWidget(thisItem);
+
+		sout << ">>> " << thisWidget->getName() << "\r\n\r\n" << thisWidget->getLog() << "\r\n\r\n";
+	}
+
+	fout.close();
+}
+
+void QtGpuMemtest::handleBlockingError(int deviceIdx, int err, int cudaErr, QString line, QString file)
+{
+	QString errMessage;
+	QTextStream(&errMessage) << "From line " << line << " in file " << file << ":\n";
+
+	if(err == 0) QTextStream(&errMessage) << "General error code " << err << ".";
+	else QTextStream(&errMessage) << "CUDA error code " << cudaErr << ".";
+
+	QMessageBox::critical(this, "Error", errMessage);
+	testThreads.remove(deviceIdx);
+}
+
+void QtGpuMemtest::handleNonBlockingError(int deviceIdx, int warn, QString line, QString file)
+{
+}
+
+void QtGpuMemtest::handleProgress(int deviceIdx, int testNo, int action)
+{
+	QString progressMessage;
+	QTextStream(&progressMessage) << deviceIdx << ": " << testNo << " action " << action;
+	QMessageBox::information(this, "Progress Notification", progressMessage);
+}

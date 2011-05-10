@@ -1,0 +1,73 @@
+#ifndef TESTICONWIDGET_H
+#define TESTICONWIDGET_H
+
+#include <QtGui>
+#include <QtGui/QWidget>
+#include <QtGui/QFont>
+
+typedef int (*TestFunc)(char*, unsigned int, int, unsigned int*, unsigned long*, unsigned long*, unsigned long*, unsigned long*, bool*);
+
+enum TestStatus { TestNotStarted, TestPassed, TestFailed, TestRunning };
+struct TestInfo
+{
+	QString		testName;
+	QString		testShortName;		// short name, no more than 2 characters long, for identifying the test in
+									// the TestIconWidget.
+	TestFunc	testFunc;
+	bool		testEnabled;
+
+	TestInfo() : testName(QString("")), testShortName(QString("")), testFunc(0), testEnabled(false) { };
+	TestInfo(QString name, QString shortName, TestFunc func, bool e) : testName(name), testShortName(shortName), testFunc(func), testEnabled(e) {};
+};
+
+class TestIconWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	TestIconWidget(TestInfo& aTestInfo, QWidget *parent = 0);
+	~TestIconWidget();
+
+	static enum Mode { SelectMode, DisplayMode };
+
+	virtual QSize sizeHint() const;
+	virtual QSize minimumSizeHint() const;
+
+public slots:
+	void setStatus(TestStatus aStatus);
+	TestStatus getStatus() const { return testStatus; }
+
+	//void setTestInfo();
+	TestInfo getTestInfo() { return testInfo; }
+
+	void setMode(Mode m);
+	Mode getMode() const { return widgetMode; }
+
+	void setWidth(int a) { adjWidth = a; }
+	int getWidth() const { return adjWidth; }
+
+	void updateRunningColor();
+
+protected:
+	virtual void paintEvent(QPaintEvent* event);
+
+	virtual void mousePressEvent(QMouseEvent* event);
+	virtual void mouseReleaseEvent(QMouseEvent* event);
+	virtual void enterEvent(QEvent* event);
+	virtual void leaveEvent(QEvent* event);
+
+private:
+	TestStatus	testStatus;
+	TestInfo	testInfo;
+	Mode		widgetMode;
+
+	QTimer*		flashTimer;
+	QColor		flashColor;
+	bool		mouseClicked;
+	bool		hover;
+
+	int			adjWidth;
+
+};
+
+#endif

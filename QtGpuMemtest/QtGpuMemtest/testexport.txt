@@ -1,0 +1,8 @@
+>>> GPU #0 - GeForce GTX 280
+
+[12:27:12][Device 0](Test0 [Walking 1 bit]) Test started.
+[12:27:12][Device 0](Test0 [Walking 1 bit]) Test ended.
+[12:27:12][Device 0](Test1 [Own address tests]) Test started.
+[12:27:14][Device 0](Test1 [Own address tests]) Test ended.
+
+

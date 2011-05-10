@@ -1,0 +1,140 @@
+#ifndef __GPU_TESTS_H
+#define __GPU_TESTS_H
+
+//
+// Shared defines
+//
+
+#define BLOCKSIZE ((unsigned long)(1024 * 1024))
+#define GRIDSIZE 128
+#define MAX_ERR_RECORD_COUNT 10
+#define MAX_ITERATION 3
+#define MOD_SZ 20
+
+#ifndef __CUDACC__
+
+//
+// Qt/MSVC defines only
+//
+
+#include <QtGui>
+#include <cuda_runtime_api.h>
+
+#include <algorithm>
+
+#include "testiconwidget.h"
+
+#define ERROR_NO_MEMORY			1
+#define PROGRESS_DONE			1
+
+#define CUERR(msg) do { if(cudaError(QString(msg)) != cudaSuccess) return; } while(0);
+
+/*#define CUERR do { if(this->cudaError(QString(__LINE__), QString(__FILE__)) != cudaSuccess) return; } while(0);
+#define SYNC_CUERR do { if(this->syncCudaError(QString(__LINE__), QString(__FILE__)) != cudaSuccess) return; } while(0);
+#define ERR(code) do { emit blockingError(device, code, 0, QString(__LINE__), QString(__FILE__)); } while(0);*/
+
+class QtGpuMemtest;
+
+extern int test0(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err_count, unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term);
+extern int test1(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err_count, unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term);
+extern int test2(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err, unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term);
+extern int test3(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err, unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term);
+extern int test4(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err, unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term);
+extern int test5(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err, unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term);
+extern int test6(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err, unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term);
+extern int test7(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err, unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term);
+extern int test8(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err, unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term);
+extern int test9(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err_count, unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term);
+extern int test10(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err_count, unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term);
+
+class QtGpuThread : public QThread
+{
+	Q_OBJECT
+
+public:
+	QtGpuThread(QVector<TestInfo>& aTests, QObject* parent = 0);
+	QtGpuThread(QObject* parent = 0) : QThread(parent) { };
+
+	void run();
+	void run_tests(char* ptr, unsigned int tot_num_blocks);
+
+	//inline cudaError_t cudaError(QString line, QString file);
+	//inline cudaError_t syncCudaError(QString line, QString file);
+
+public slots:
+	void setDevice(int idx) { device = idx; }
+
+	void notifyExit() { terminationFlag = true; }
+	void setEndless(bool b) { infiniteFlag = b; }
+
+signals:
+	// Is deviceIdx necessary here? Depends on how far up the chain the signal is connected.
+	// Best to err on the safer side and keep it.
+
+	void failed(int deviceIdx, QString testName);
+	void passed(int deviceIdx, QString testName);
+	void starting(int deviceIdx, QString testName);
+	void log(int deviceIdx, QString testName, QString logMessage);
+
+protected:
+	cudaError_t cudaError(QString msgFail);
+
+private:
+	unsigned int		device;
+	QVector<TestInfo>	tests;
+
+	// Adopted from the old code. Eventually, move to a queue structure shared between threads
+	// and synchronized by semaphores so there are no such things as unreported_errors.
+
+	unsigned long* err_addr;
+	unsigned long* err_expect;
+	unsigned long* err_current;
+	unsigned long* err_second_read;
+	unsigned int* err_count;
+	unsigned int unreported_errors;
+
+	bool	terminationFlag;
+	bool	infiniteFlag;
+};
+
+#else
+
+//
+// CUDA tests/kernel defines only
+//
+
+#include <windows.h>
+
+#ifdef SM_10
+#define atomicAdd(x, y) do{ (*x) = (*x) + y ;}while(0)
+#define RECORD_ERR(err, p, expect, current) do{	  \
+	atomicAdd(err, 1); \
+	}while(0)
+#else
+
+#define RECORD_ERR(err, p, expect, current) do{		\
+	unsigned int idx = atomicAdd(err, 1);		\
+	idx = idx % MAX_ERR_RECORD_COUNT;		\
+	err_addr[idx] = (unsigned long)p;		\
+	err_expect[idx] = (unsigned long)expect;	\
+	err_current[idx] = (unsigned long)current;	\
+	err_second_read[idx] = (unsigned long)(*p);	\
+}while(0) 
+
+#define SYNC_CUERR do { cudaError_t __err; cudaThreadSynchronize(); \
+	if((__err = cudaGetLastError()) != cudaSuccess) return __err; \
+} while(0)
+
+#define CUERR do { cudaError_t __err; \
+	if((__err = cudaGetLastError()) != cudaSuccess) return __err; \
+} while(0)
+
+#define SHOW_PROGRESS
+#define DEBUG_PRINTF
+
+
+#endif
+
+#endif
+
+#endif

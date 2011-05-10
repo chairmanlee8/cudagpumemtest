@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QtGpuMemtest", "QtGpuMemtest\QtGpuMemtest.vcproj", "{1C4FDA09-944C-4D9E-91F8-91F9227C12FC}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SetupQtGpuMemtest", "..\SetupQtGpuMemtest\SetupQtGpuMemtest.vdproj", "{CE38A8B9-B13A-49AE-BB07-B89E08DD2A4F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1C4FDA09-944C-4D9E-91F8-91F9227C12FC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1C4FDA09-944C-4D9E-91F8-91F9227C12FC}.Debug|Win32.Build.0 = Debug|Win32
+		{1C4FDA09-944C-4D9E-91F8-91F9227C12FC}.Release|Win32.ActiveCfg = Release|Win32
+		{1C4FDA09-944C-4D9E-91F8-91F9227C12FC}.Release|Win32.Build.0 = Release|Win32
+		{CE38A8B9-B13A-49AE-BB07-B89E08DD2A4F}.Debug|Win32.ActiveCfg = Debug
+		{CE38A8B9-B13A-49AE-BB07-B89E08DD2A4F}.Release|Win32.ActiveCfg = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

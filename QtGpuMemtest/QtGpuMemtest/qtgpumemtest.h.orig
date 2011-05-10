@@ -1,0 +1,58 @@
+#ifndef QTGPUMEMTEST_H
+#define QTGPUMEMTEST_H
+
+#include <QtGui>
+#include <QtGui/QMainWindow>
+#include <QVector>
+#include <QMap>
+#include <QFile>
+#include <QIODevice>
+
+#include "../../GpuDisplayWidget/GpuDisplayWidget/gpudisplaywidget.h"
+#include "ui_qtgpumemtest.h"
+
+#include <cuda_runtime_api.h>
+
+#include "gputests.h"
+
+class QtGpuMemtest : public QMainWindow
+{
+	Q_OBJECT
+
+public:
+	QtGpuMemtest(QWidget *parent = 0, Qt::WFlags flags = 0);
+	~QtGpuMemtest();
+
+public slots:
+	void relistDevices();
+	void checkAllDevices();
+	void checkNoDevices();
+	void clearDevices();
+
+	// some menu functions
+	void about();
+	void exit();
+	void copyResults();
+	void exportResults();
+
+	void startTest(const int index);
+
+	void startChecked();
+	void stopAll();
+
+	void handleBlockingError(int deviceIdx, int err, int cudaErr, QString line, QString file);
+	void handleNonBlockingError(int deviceIdx, int warn, QString line, QString file);
+	void handleProgress(int deviceIdx, int testNo, int action);
+
+private:
+	Ui::QtGpuMemtestClass ui;
+	
+	GpuDisplayWidget *deviceWidgets;
+	cudaDeviceProp *devices;
+	int deviceCount;
+
+	QMap<int, QtGpuThread*> testThreads;
+	QVector<TestInfo>		tests;
+};
+
+#endif // QTGPUMEMTEST_H
