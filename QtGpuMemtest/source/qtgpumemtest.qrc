@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/QtGpuMemtest">
+        <file>resources/beaker_alt_16x32.png</file>
+        <file>resources/book_24x24.png</file>
+        <file>resources/check_24x20.png</file>
+        <file>resources/loop_24x24.png</file>
+        <file>resources/magnifying_glass_alt_24x24.png</file>
+        <file>resources/ncsa.ico</file>
+        <file>resources/play_18x24.png</file>
+        <file>resources/play_18x24_blue.png</file>
+        <file>resources/playinfinite_18x24_blue.png</file>
+        <file>resources/spin_21x24.png</file>
+        <file>resources/spin_28x32.png</file>
+        <file>resources/stop_16x16.png</file>
+        <file>resources/stop_16x16_blue.png</file>
+        <file>resources/stop_24x24.png</file>
+        <file>resources/sun_24x24.png</file>
+        <file>resources/x_21x21.png</file>
+    </qresource>
+</RCC>
