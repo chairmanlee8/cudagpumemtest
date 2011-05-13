@@ -1,0 +1,219 @@
+================= Logging started at 5/13/2011 08:31:29 AM ==================
+Created release folders
+AdminExecuteSequence table successfully built
+AdminUISequence table successfully built
+AdvtExecuteSequence table successfully built
+AdvtUISequence table successfully built
+InstallExecuteSequence table successfully built
+InstallUISequence table successfully built
+Directory table successfully built
+Feature table successfully built
+FeatureComponents table successfully built
+Component table successfully built
+Loading File table
+Building File table
+Merging modules...
+Merging Visual C++ 9.0 CRT (x86) WinSXS MSM: C:\Program Files (x86)\Common Files\Merge Modules\Microsoft_VC90_CRT_x86.msm
+ISDEV : error -6307: Unable to extract one or more files to 'C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C'. The file path is longer than the limit set by the operating system. Change the build location of the current release to a shorter path to resolve this issue.
+Merging Microsoft OLE 2.40  for Windows NT(TM) and Windows 95(TM) Operating Systems: C:\Program Files (x86)\InstallShield\2009\Modules\i386\OLEAUT32.MSM
+File table successfully built
+Building MsiFileHash table
+MsiFileHash table successfully built
+Class table successfully built
+Extension table successfully built
+ODBCDataSource table successfully built
+ODBCDriver table successfully built
+ISSQLScriptFile table successfully built
+ISSQLScriptReplace table successfully built
+ISSQLConnectionScript table successfully built
+ISSQLConnection table successfully built
+ISSQLConnectionDBServer table successfully built
+ISSQLRequirement table successfully built
+ISPalmApp table successfully built
+ISPalmAppFile table successfully built
+ISComPlusProxy table successfully built
+ISComPlusApplication table successfully built
+ISComCatalogCollection table successfully built
+ISComCatalogCollectionObjects table successfully built
+ISComCatalogObject table successfully built
+ISComCatalogAttribute table successfully built
+ISComPlusApplicationDLL table successfully built
+ISComPlusServerFile table successfully built
+ISComPlusProxyFile table successfully built
+ISComPlusServerDepFile table successfully built
+ISComPlusProxyDepFile table successfully built
+ISXmlFile table successfully built
+ISXmlElement table successfully built
+ISXmlElementAttrib table successfully built
+ActionText table successfully built
+AppSearch table successfully built
+BindImage table successfully built
+CCPSearch table successfully built
+Condition table successfully built
+AppId table successfully built
+Started signing DA21.tmp ...
+Property table successfully built
+BBControl table successfully built
+Billboard table successfully built
+Binary table successfully built
+CompLocator table successfully built
+Complus table successfully built
+ControlCondition table successfully built
+ControlEvent table successfully built
+CreateFolder table successfully built
+CustomAction table successfully built
+Error table successfully built
+DrLocator table successfully built
+DuplicateFile table successfully built
+Environment table successfully built
+EventMapping table successfully built
+FileSFPCatalog table successfully built
+Font table successfully built
+IniFile table successfully built
+IniLocator table successfully built
+ISCEApp table successfully built
+ISCEDir table successfully built
+ISCEFileExt table successfully built
+ISCEInstall table successfully built
+ISCEOtherAppCABs table successfully built
+ISCERegistry table successfully built
+ISCESetupFile table successfully built
+ISCEShtCut table successfully built
+ProgId table successfully built
+ISComponentExtended table successfully built
+ISCustomActionReference table successfully built
+ISDRMFile table successfully built
+ISFileManifests table successfully built
+ISIISAppPool table successfully built
+ISIISCommon table successfully built
+ISIISMetaData table successfully built
+ISIISWebServiceExtension table successfully built
+ISObjectProperty table successfully built
+IsolatedComponent table successfully built
+ISSelfReg table successfully built
+ISSQLDBMetaData table successfully built
+ISSQLScriptError table successfully built
+ISVRoot table successfully built
+ISVRootAppMaps table successfully built
+Verb table successfully built
+ISWebSite table successfully built
+ISXmlLocator table successfully built
+LaunchCondition table successfully built
+LockPermissions table successfully built
+MIME table successfully built
+MoveFile table successfully built
+MsiAssembly table successfully built
+MsiAssemblyName table successfully built
+MsiDigitalCertificate table successfully built
+MsiDigitalSignature table successfully built
+MsiDriverPackages table successfully built
+MsiPatchCertificate table successfully built
+ODBCAttribute table successfully built
+ODBCSourceAttribute table successfully built
+ODBCTranslator table successfully built
+PatchPackage table successfully built
+PublishComponent table successfully built
+Registry table successfully built
+RegLocator table successfully built
+RemoveFile table successfully built
+RemoveIniFile table successfully built
+RemoveRegistry table successfully built
+ReserveCost table successfully built
+SelfReg table successfully built
+ServiceControl table successfully built
+ServiceInstall table successfully built
+SFPCatalog table successfully built
+ISDEV : warning -7119: Could not locate a key file for component QtGpuMemtest.exe. Advertised shortcut QtGpuMemtest.exe points to the key file of this component.
+Started signing DB2D.tmp ...
+ISDEV : warning -7119: Could not locate a key file for component QtGpuMemtest.exe2. Advertised shortcut QtGpuMemtest.exe2 points to the key file of this component.
+Started signing DB5D.tmp ...
+ISDEV : warning -7119: Could not locate a key file for component QtGpuMemtest.exe1. Advertised shortcut QtGpuMemtest.exe1 points to the key file of this component.
+Started signing DB7F.tmp ...
+Started signing DBAF.tmp ...
+Started signing DBD1.tmp ...
+Shortcut table successfully built
+Signature table successfully built
+TextStyle table successfully built
+TypeLib table successfully built
+UIText table successfully built
+Upgrade table successfully built
+ISVirtualFile table successfully built
+ISVirtualRegistry table successfully built
+ISVirtualDirectory table successfully built
+ISVirtualShortcut table successfully built
+ISVirtualPackage table successfully built
+ISVirtualRelease table successfully built
+MsiEmbeddedUI table successfully built
+MsiEmbeddedChainer table successfully built
+ISChainPackage table successfully built
+ISChainPackageData table successfully built
+MsiPackageCertificate table successfully built
+_Validation table successfully built
+Searching project for extract-at-build components...
+Validating Custom Action sequencing
+Embedding manifest SetupExe.Invoker.manifest into setup.exe
+Dialog AdminChangeFolder for language English (United States) built
+Dialog AdminNetworkLocation for language English (United States) built
+Dialog AdminWelcome for language English (United States) built
+Dialog CancelSetup for language English (United States) built
+Dialog CustomSetup for language English (United States) built
+Dialog CustomSetupTips for language English (United States) built
+Dialog CustomerInformation for language English (United States) built
+Dialog DatabaseFolder for language English (United States) built
+Dialog DestinationFolder for language English (United States) built
+Dialog DiskSpaceRequirements for language English (United States) built
+Dialog FilesInUse for language English (United States) built
+Dialog InstallChangeFolder for language English (United States) built
+Dialog InstallWelcome for language English (United States) built
+Dialog LicenseAgreement for language English (United States) built
+Dialog MaintenanceType for language English (United States) built
+Dialog MaintenanceWelcome for language English (United States) built
+Dialog MsiRMFilesInUse for language English (United States) built
+Dialog OutOfSpace for language English (United States) built
+Dialog PatchWelcome for language English (United States) built
+Dialog ReadyToInstall for language English (United States) built
+Dialog ReadyToRemove for language English (United States) built
+Dialog SetupCompleteError for language English (United States) built
+Dialog SetupCompleteSuccess for language English (United States) built
+Dialog SetupError for language English (United States) built
+Dialog SetupInitialization for language English (United States) built
+Dialog SetupInterrupted for language English (United States) built
+Dialog SetupProgress for language English (United States) built
+Dialog SetupResume for language English (United States) built
+Dialog SetupType for language English (United States) built
+Dialog SplashBitmap for language English (United States) built
+Resolving strings...
+Language English (United States) built
+Building CAB files...
+ISDEV : error -1501: Could not compress "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\ul_msvcr90.dll.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C" into "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\SINGLE_EXE_IMAGE\DiskImages\DISK1\Data1.cab"
+ISDEV : error -1501: Could not compress "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\nosxs_msvcr90.dll.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C" into "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\SINGLE_EXE_IMAGE\DiskImages\DISK1\Data1.cab"
+ISDEV : error -1501: Could not compress "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\nosxs_msvcp90.dll.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C" into "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\SINGLE_EXE_IMAGE\DiskImages\DISK1\Data1.cab"
+ISDEV : error -1501: Could not compress "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\nosxs_msvcm90.dll.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C" into "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\SINGLE_EXE_IMAGE\DiskImages\DISK1\Data1.cab"
+ISDEV : error -1501: Could not compress "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\ul_manifest.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C" into "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\SINGLE_EXE_IMAGE\DiskImages\DISK1\Data1.cab"
+ISDEV : error -1501: Could not compress "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\ul_catalog.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C" into "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\SINGLE_EXE_IMAGE\DiskImages\DISK1\Data1.cab"
+ISDEV : error -1501: Could not compress "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\ul_msvcp90.dll.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C" into "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\SINGLE_EXE_IMAGE\DiskImages\DISK1\Data1.cab"
+ISDEV : error -1501: Could not compress "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\ul_msvcm90.dll.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C" into "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\SINGLE_EXE_IMAGE\DiskImages\DISK1\Data1.cab"
+ISDEV : error -1501: Could not compress "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\msvcr90.dll.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C" into "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\SINGLE_EXE_IMAGE\DiskImages\DISK1\Data1.cab"
+ISDEV : error -1501: Could not compress "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\msvcp90.dll.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C" into "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\SINGLE_EXE_IMAGE\DiskImages\DISK1\Data1.cab"
+ISDEV : error -1501: Could not compress "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\msvcm90.dll.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C" into "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\SINGLE_EXE_IMAGE\DiskImages\DISK1\Data1.cab"
+ISDEV : error -1501: Could not compress "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\manifest.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C" into "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\SINGLE_EXE_IMAGE\DiskImages\DISK1\Data1.cab"
+ISDEV : error -1501: Could not compress "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\catalog.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C" into "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\SINGLE_EXE_IMAGE\DiskImages\DISK1\Data1.cab"
+Data1.cab built
+Files built
+Media table successfully built
+ISDEV : error -6103: Could not find file "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\ul_msvcr90.dll.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C"
+ISDEV : error -6103: Could not find file "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\ul_manifest.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C"
+ISDEV : error -6103: Could not find file "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\ul_catalog.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C"
+ISDEV : error -6103: Could not find file "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\ul_msvcp90.dll.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C"
+ISDEV : error -6103: Could not find file "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\ul_msvcm90.dll.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C"
+ISDEV : error -6103: Could not find file "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\msvcr90.dll.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C"
+ISDEV : error -6103: Could not find file "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\msvcp90.dll.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C"
+ISDEV : error -6103: Could not find file "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\msvcm90.dll.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C"
+ISDEV : error -6103: Could not find file "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\manifest.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C"
+ISDEV : error -6103: Could not find file "C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\Interm\MergeModules\Microsoft_VC90_CRT_x86.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C\catalog.30729.4148.Microsoft_VC90_CRT_x86.QFE.AA2EBBCC_4E3B_3442_865E_7BB3E9F45F0C"
+Setup.exe created
+Automatic update notification disabled
+PROJECT_ASSISTANT\SINGLE_EXE_IMAGE - 24 error(s), 3 warning(s)
+================= Logging stopped at 5/13/2011 08:31:37 AM ==================
+Log file has been created: <file:C:\Users\alee\Documents\Work\NCSA (2011)\qtgpumemtest\QtGpuMemtest\packaged\QtGpuMemtestInstaller\PROJECT_ASSISTANT\SINGLE_EXE_IMAGE\LogFiles\5-13-2011 08-31-29 AM.txt>
+
