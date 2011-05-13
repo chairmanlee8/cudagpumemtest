@@ -10,11 +10,6 @@
  *
  **********************************************************************************/
 
-extern unsigned int
-get_random_num(void);
-
-
-
 __global__ void
 kernel_modtest_write(char* _ptr, char* end_ptr, unsigned int offset, unsigned int p1, unsigned int p2)
 {
@@ -44,8 +39,7 @@ kernel_modtest_write(char* _ptr, char* end_ptr, unsigned int offset, unsigned in
 
 
 __global__ void
-kernel_modtest_read(char* _ptr, char* end_ptr, unsigned int offset, unsigned int p1, unsigned int* err,
-                    unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read)
+kernel_modtest_read(char* _ptr, char* end_ptr, unsigned int offset, unsigned int p1, MemoryError* local_error, int* local_count)
 {
 	unsigned int i;
 	unsigned int* ptr = (unsigned int*) (_ptr + blockIdx.x*BLOCKSIZE);
@@ -59,7 +53,7 @@ kernel_modtest_read(char* _ptr, char* end_ptr, unsigned int offset, unsigned int
 	{
 		if (ptr[i] !=p1)
 		{
-			RECORD_ERR(err, &ptr[i], p1, ptr[i]);
+			record_error(local_error, local_count, &ptr[i], p1);
 		}
 	}
 
@@ -67,8 +61,7 @@ kernel_modtest_read(char* _ptr, char* end_ptr, unsigned int offset, unsigned int
 }
 
 unsigned int
-modtest(char* ptr, unsigned int tot_num_blocks, unsigned int offset, unsigned int p1, unsigned int p2, unsigned int* err_count, unsigned long* err_addr,
-        unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool* term)
+modtest(char* ptr, unsigned int tot_num_blocks, unsigned int offset, unsigned int p1, unsigned int p2, MemoryError *local_error, int *local_count, bool* term)
 {
 
 	unsigned int i;
@@ -89,7 +82,7 @@ modtest(char* ptr, unsigned int tot_num_blocks, unsigned int offset, unsigned in
 		if(*term == true) break;
 		dim3 grid;
 		grid.x= GRIDSIZE;
-		kernel_modtest_read<<<grid, 1>>>(ptr + i*BLOCKSIZE, end_ptr, offset, p1, err_count, err_addr, err_expect, err_current, err_second_read); SYNC_CUERR;
+		kernel_modtest_read<<<grid, 1>>>(ptr + i*BLOCKSIZE, end_ptr, offset, p1, local_error, local_count); SYNC_CUERR;
 		//err += error_checking("test8[mod test, read", i);
 		//SHOW_PROGRESS("test8[mod test, read]", i, tot_num_blocks);
 	}
@@ -99,8 +92,7 @@ modtest(char* ptr, unsigned int tot_num_blocks, unsigned int offset, unsigned in
 }
 
 int
-test8(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err_count, unsigned long* err_addr,
-      unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term)
+test8(TestInputParams *tip, TestOutputParams *top, bool *term)
 {
 	unsigned int i;
 	unsigned int err = 0;
@@ -119,7 +111,7 @@ repeat:
 	//PRINTF("test8[mod test]: p1=0x%x, p2=0x%x\n", p1,p2);
 	for (i = 0; i < MOD_SZ; i++)
 	{
-		err += modtest(ptr, tot_num_blocks,i, p1, p2, err_count, err_addr, err_expect, err_current, err_second_read, term);
+		err += modtest(tip->ptr, tip->tot_num_blocks,i, p1, p2, top->err_vector, top->err_count, term);
 	}
 
 	if (err == 0 && iteration == 0)
@@ -127,7 +119,7 @@ repeat:
 		return cudaSuccess;
 	}
 
-	if (iteration < MAX_ITERATION)
+	if (iteration < tip->num_iterations)
 	{
 		//PRINTF("%dth repeating test8 because there are %d errors found in last run, p1=%x, p2=%p\n", iteration, err, p1, p2);
 		iteration++;

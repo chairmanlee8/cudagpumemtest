@@ -2,7 +2,7 @@
 #include "qtgpumemtest.h"
 
 GpuDisplayWidget::GpuDisplayWidget(QWidget *parent)
-	: QWidget(parent), m_widgetIndex(0), gpuThread(0)
+	: QWidget(parent), widgetIndex(0), state(SelectingMode)
 {
 	layout = new QVBoxLayout(this);
 	innerTopLayout = new QHBoxLayout();
@@ -10,40 +10,41 @@ GpuDisplayWidget::GpuDisplayWidget(QWidget *parent)
 
 	startButton = new QToolButton();
 	startLoopButton = new QToolButton();
-	startStressButton = new QToolButton();
 	stopButton = new QToolButton();
 	resultsButton = new QToolButton();
 
-	startButton->setIcon(QIcon("play_18x24_blue.png"));
+	startButton->setIcon(QIcon(":/QtGpuMemtest/resources/play_18x24_blue.png"));
 	startButton->setIconSize(QSize(24, 24));
-	startLoopButton->setIcon(QIcon("playinfinite_18x24_blue.png"));
+	startLoopButton->setIcon(QIcon(":/QtGpuMemtest/resources/playinfinite_18x24_blue.png"));
 	startLoopButton->setIconSize(QSize(24, 24));
-	stopButton->setIcon(QIcon("stop_16x16_blue.png"));
+	stopButton->setIcon(QIcon(":/QtGpuMemtest/resources/stop_16x16_blue.png"));
 	stopButton->setIconSize(QSize(24, 24));
 	stopButton->setEnabled(false);
-	resultsButton->setIcon(QIcon("book_24x24.png"));
+	resultsButton->setIcon(QIcon(":/QtGpuMemtest/resources/book_24x24.png"));
 	resultsButton->setIconSize(QSize(24, 24));
 
-	m_labelGpu = new QLabel("Default GPU");
-	m_labelMemory = new QLabel("#Memory");
-	m_progress = new QHBoxLayout();
-	m_progress->setAlignment(Qt::AlignLeft);
-	m_checkStart = new QCheckBox();
-	m_labelStopping = new QLabel();
+	labelGpu = new QLabel("Default GPU");
+	labelMemory = new QLabel("#Memory");
+	progress = new QHBoxLayout();
+	progress->setAlignment(Qt::AlignLeft);
+	checkStart = new QCheckBox();
+	labelStopping = new QLabel();
 
-	m_progress->setSpacing(1);
-	m_labelGpu->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	progress->setSpacing(1);
+	labelGpu->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-	innerTopLayout->addWidget(m_checkStart);
-	innerTopLayout->addWidget(m_labelGpu);
+	innerTopLayout->addWidget(checkStart);
+	innerTopLayout->addWidget(labelGpu);
 	layout->addLayout(innerTopLayout);
-	layout->addWidget(m_labelMemory);
-	layout->addLayout(m_progress);
+	layout->addWidget(labelMemory);
+	layout->addLayout(progress);
 	innerBottomLayout->addWidget(startButton);
 	innerBottomLayout->addWidget(startLoopButton);
 	innerBottomLayout->addWidget(stopButton);
-	innerBottomLayout->addWidget(m_labelStopping);
-	innerBottomLayout->addWidget(resultsButton, 0, Qt::AlignRight);
+	innerBottomLayout->addSpacing(10);
+	innerBottomLayout->addWidget(labelStopping);
+	innerBottomLayout->addStretch();
+	innerBottomLayout->addWidget(resultsButton, 0);
 	layout->addLayout(innerBottomLayout);
 
 	this->setStyleSheet
@@ -61,10 +62,18 @@ GpuDisplayWidget::GpuDisplayWidget(QWidget *parent)
 	);
 
 	// Connect signals and slots
-	connect(startButton, SIGNAL(clicked()), this, SLOT(startTestOnce()));
-	connect(startLoopButton, SIGNAL(clicked()), this, SLOT(startTestInfinite()));
-	connect(stopButton, SIGNAL(clicked()), this, SLOT(endTest()));
-	connect(resultsButton, SIGNAL(clicked()), this, SLOT(displayLog()));
+	QSignalMapper* mapper = new QSignalMapper(this);
+	mapper->setMapping(startButton, 0);
+	mapper->setMapping(startLoopButton, 1);
+	connect(startButton, SIGNAL(clicked()), mapper, SLOT(map()));
+	connect(startLoopButton, SIGNAL(clicked()), mapper, SLOT(map()));
+	connect(mapper, SIGNAL(mapped(int)), this, SIGNAL(startTests(int)));
+
+	connect(stopButton, SIGNAL(clicked()), this, SLOT(stopButtonClicked()));
+	connect(resultsButton, SIGNAL(clicked()), this, SIGNAL(displayResults()));
+
+	// Set initial state
+	setState(SelectingMode);
 }
 
 GpuDisplayWidget::~GpuDisplayWidget()
@@ -72,16 +81,7 @@ GpuDisplayWidget::~GpuDisplayWidget()
 
 }
 
-void GpuDisplayWidget::startTestOnce()
-{
-	startTest(false);
-}
-
-void GpuDisplayWidget::startTestInfinite()
-{
-	startTest(true);
-}
-
+/*
 void GpuDisplayWidget::startTest(bool infinite)
 {
 	// Blah blah load test options and what not, configuration and stuff, anything that needs to be
@@ -92,16 +92,8 @@ void GpuDisplayWidget::startTest(bool infinite)
 	startLoopButton->setEnabled(false);
 	stopButton->setEnabled(true);
 
-	// Load individual test options (tests enabled/disabled)
-	QVector<TestInfo> newTests;
-	for(int i = 0; i < testWidgets.size(); i++)
-	{
-		testWidgets[i]->setMode(TestIconWidget::DisplayMode);
-		newTests.push_back(testWidgets[i]->getTestInfo());
-	}
-
 	// Setup GPU thread
-	gpuThread = new QtGpuThread(newTests);
+	gpuThread = new QtGpuThread(tests);
 
 	connect(gpuThread, SIGNAL(failed(int, QString)), this, SLOT(testFailed(int, QString)));
 	connect(gpuThread, SIGNAL(passed(int, QString)), this, SLOT(testPassed(int, QString)));
@@ -112,9 +104,9 @@ void GpuDisplayWidget::startTest(bool infinite)
 	// Link the controller to test ended signals
 	// Notify the controller of how many tests will be performed for this widget
 	int enabledCount = 0;
-	for(int i = 0; i < newTests.count(); i++)
+	for(int i = 0; i < tests.count(); i++)
 	{
-		if(newTests[i].testEnabled) enabledCount++;
+		if(tests[i]->testEnabled) enabledCount++;
 	}
 	m_controller->testsStarted(enabledCount);
 	connect(gpuThread, SIGNAL(ended(int, QString)), m_controller, SLOT(testEnded(int, QString)));
@@ -199,13 +191,48 @@ QString GpuDisplayWidget::getLog()
 	}
 
 	return t;
+}*/
+
+void GpuDisplayWidget::setState(Mode newState)
+{
+	// The current state controls what buttons on the bottom are available to the user.
+	// Additionally, it controls the display mode of the TestIconWidgets.
+
+	switch(newState)
+	{
+		case SelectingMode:
+			startButton->setEnabled(true);
+			startLoopButton->setEnabled(true);
+			stopButton->setEnabled(false);
+			labelStopping->setText(tr(""));
+			break;
+		case RunningMode:
+			startButton->setEnabled(false);
+			startLoopButton->setEnabled(false);
+			stopButton->setEnabled(true);
+			labelStopping->setText(tr(""));
+			break;
+		case StoppedMode:
+			startButton->setEnabled(false);
+			startLoopButton->setEnabled(false);
+			stopButton->setEnabled(true);
+			labelStopping->setText(tr("Done, press stop again to reset tests."));
+			break;
+	}
+
+	for(int i = 0; i < testWidgets.count(); i++)
+	{
+		testWidgets[i]->setState((newState == SelectingMode) ? TestIconWidget::SelectMode : TestIconWidget::DisplayMode);
+	}
+
+	state = newState;
 }
 
-void GpuDisplayWidget::testFailed(int deviceIdx, QString testName)
+void GpuDisplayWidget::testFailed(TestInfo test)
 {
 	for(int i = 0; i < testWidgets.size(); i++)
 	{
-		if(testName == testWidgets[i]->getTestInfo().testName)
+		if(test == testWidgets[i]->getTestInfo())
 		{
 			testWidgets[i]->setStatus(TestFailed);
 			break;
@@ -213,11 +240,11 @@ void GpuDisplayWidget::testFailed(int deviceIdx, QString testName)
 	}
 }
 
-void GpuDisplayWidget::testPassed(int deviceIdx, QString testName)
+void GpuDisplayWidget::testPassed(TestInfo test)
 {
 	for(int i = 0; i < testWidgets.size(); i++)
 	{
-		if(testName == testWidgets[i]->getTestInfo().testName)
+		if(test == testWidgets[i]->getTestInfo())
 		{
 			testWidgets[i]->setStatus(TestPassed);
 			break;
@@ -225,11 +252,11 @@ void GpuDisplayWidget::testPassed(int deviceIdx, QString testName)
 	}
 }
 
-void GpuDisplayWidget::testStarting(int deviceIdx, QString testName)
+void GpuDisplayWidget::testStarting(TestInfo test)
 {
 	for(int i = 0; i < testWidgets.size(); i++)
 	{
-		if(testName == testWidgets[i]->getTestInfo().testName)
+		if(test == testWidgets[i]->getTestInfo())
 		{
 			testWidgets[i]->setStatus(TestRunning);
 			break;
@@ -237,99 +264,44 @@ void GpuDisplayWidget::testStarting(int deviceIdx, QString testName)
 	}
 }
 
-void GpuDisplayWidget::testLog(int deviceIdx, QString testName, QString logMessage)
-{
-	QString logString("");
-	QTextStream logStream(&logString);
-
-	logStream << "[" << QTime::currentTime().toString() << "][Device " << deviceIdx << "](" << testName << ") " << logMessage;
-	logStream.flush();
-
-	log.push_back(logString);
-}
-
-void GpuDisplayWidget::paintEvent(QPaintEvent* event)
-{
-	QStyleOption opt;
-	opt.init(this);
-	QPainter p(this);
-	style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
-	//QWidget::paintEvent(event);
-}
-
-QFont GpuDisplayWidget::font() const
-{
-	return m_labelGpu->font();
-}
-
 void GpuDisplayWidget::setFont(const QFont &font)
 {
-	m_labelGpu->setFont(font);
+	labelGpu->setFont(font);
 
 	QFont *newFont = new QFont(font);
 	newFont->setPointSize(newFont->pointSize() - 4);
 
-	m_labelMemory->setFont(*newFont);
-}
-
-int GpuDisplayWidget::index() const
-{
-	return m_widgetIndex;
-}
-
-void GpuDisplayWidget::setIndex(int idx)
-{
-	m_widgetIndex = idx;
-}
-
-void GpuDisplayWidget::setCheckStart(const int checked)
-{
-	m_checkStart->setChecked(checked > 0);
-}
-
-void GpuDisplayWidget::setGpuName(const QString& gpuName)
-{
-	m_labelGpu->setText(gpuName);
-}
-
-void GpuDisplayWidget::setGpuMemory(const QString& gpuMemory)
-{
-	m_labelMemory->setText(gpuMemory);
-}
-
-void GpuDisplayWidget::setTestStatus(const TestStatus& gpuTestStatus)
-{
+	labelMemory->setFont(*newFont);
 }
 
 void GpuDisplayWidget::setTests(QVector<TestInfo>& aTests)
 {
 	// Remove old tests and add new ones
-	for(int i = 0; i < tests.size(); i++)
+	for(int i = 0; i < testWidgets.size(); i++)
 	{
-		m_progress->removeWidget(testWidgets[i]);
+		progress->removeWidget(testWidgets[i]);
 		delete testWidgets[i];
 	}
 
-	tests.clear();
 	testWidgets.clear();
 
 	for(int i = 0; i < aTests.size(); i++)
 	{
-		tests.push_back(aTests[i]);
-
-		TestIconWidget* aWidget = new TestIconWidget(tests[i]);
+		TestIconWidget* aWidget = new TestIconWidget(aTests[i]);
+		connect(aWidget, SIGNAL(maskEnable(TestInfo, bool)), this, SLOT(maskSelect(TestInfo, bool)));
 		//aWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-		
-		if(aTests[i].testShortName.length() > 1)
-		{
-			// TODO: actually calculate the width of the widget
-			aWidget->setWidth(56);
-		}
 
-		m_progress->addWidget(aWidget);
-
+		progress->addWidget(aWidget);
 		testWidgets.push_back(aWidget);
 	}
+}
+
+QVector<TestInfo> GpuDisplayWidget::getTests()
+{
+	QVector<TestInfo> temp;
+	for(int i = 0; i < testWidgets.size(); i++)
+		temp.append(testWidgets[i]->getTestInfo());
+	return temp;
 }
 
 bool GpuDisplayWidget::isTestFailed()
@@ -341,4 +313,52 @@ bool GpuDisplayWidget::isTestFailed()
 	}
 
 	return false;
+}
+
+void GpuDisplayWidget::stopButtonClicked()
+{
+	switch(state)
+	{
+		case RunningMode:
+			emit stopTests();
+			break;
+		case StoppedMode:
+			setState(SelectingMode);
+			break;
+		case SelectingMode:
+			break;
+	}
+}
+
+void GpuDisplayWidget::maskSelect(TestInfo pivot, bool mask)
+{
+	int num_selected = 0;
+
+	// If double click is on a solo-ed item, select all
+	// If double click is on a non-solo selected item, solo it
+	// If double click is on a non-selected item, select all except it (is this intuitive?)
+
+	for(int i = 0; i < testWidgets.size(); i++)
+	{
+		if(testWidgets[i]->getTestInfo().testEnabled) num_selected++;
+	}
+
+	for(int i = 0; i < testWidgets.size(); i++)
+	{
+		if(testWidgets[i]->getTestInfo() != pivot)
+		{
+			testWidgets[i]->setTestEnabled(((num_selected == 1) ^ !mask) | !mask);
+		}
+	}
+
+	update();
+}
+
+void GpuDisplayWidget::paintEvent(QPaintEvent* event)
+{
+	QStyleOption opt;
+	opt.init(this);
+	QPainter p(this);
+	style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
+	//QWidget::paintEvent(event);
 }

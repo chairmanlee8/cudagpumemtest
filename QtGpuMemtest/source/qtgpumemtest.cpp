@@ -7,7 +7,7 @@ QtGpuMemtest::QtGpuMemtest(QWidget *parent, Qt::WFlags flags)
 
 	// Create tests
 	tests.push_back(TestInfo(0,		QString("Test0 [Walking 1 bit]"),					QString("0"),		test0,	true));
-	/*tests.push_back(TestInfo(1,		QString("Test1 [Own address tests]"),				QString("1"),		test1,	true));
+	tests.push_back(TestInfo(1,		QString("Test1 [Own address tests]"),				QString("1"),		test1,	true));
 	tests.push_back(TestInfo(2,		QString("Test2 [Moving inversions, ones&zeros]"),	QString("2"),		test2,	true));
 	tests.push_back(TestInfo(3,		QString("Test3 [Moving inversions, 8 bit pat]"),	QString("3"),		test3,	true));
 	tests.push_back(TestInfo(4,		QString("Test4 [Moving inversions, random pat]"),	QString("4"),		test4,	true));
@@ -16,7 +16,7 @@ QtGpuMemtest::QtGpuMemtest(QWidget *parent, Qt::WFlags flags)
 	tests.push_back(TestInfo(7,		QString("Test7 [Random number sequence]"),			QString("7"),		test7,	true));
 	tests.push_back(TestInfo(8,		QString("Test8 [Modulo 20, random pattern]"),		QString("8"),		test8,	true));
 	tests.push_back(TestInfo(9,		QString("Test9 [Bit fade test]"),					QString("9"),		test9,	false));
-	tests.push_back(TestInfo(10,	QString("Test10 [Stress test]"),					QString("Stress"),	test10,	false));*/
+	tests.push_back(TestInfo(10,	QString("Test10 [Stress test]"),					QString("Stress"),	test10,	false));
 
 	// Link actions and events
 	QSignalMapper* checkMapper = new QSignalMapper(this);
@@ -25,6 +25,8 @@ QtGpuMemtest::QtGpuMemtest(QWidget *parent, Qt::WFlags flags)
 	connect(ui.actionCheckAll, SIGNAL(triggered()), checkMapper, SLOT(map()));
 	connect(ui.actionCheckNone, SIGNAL(triggered()), checkMapper, SLOT(map()));
 	connect(checkMapper, SIGNAL(mapped(int)), this, SLOT(checkAllDevices(int)));
+
+	// TODO: add some sort of one-time explanation of how to use the advanced mode gui
 
 	connect(ui.actionRelist, SIGNAL(triggered()), this, SLOT(relistDevices()));	
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(exit()));
@@ -53,7 +55,7 @@ QtGpuMemtest::QtGpuMemtest(QWidget *parent, Qt::WFlags flags)
 	ui.actionRelist->trigger();
 
 	// Temporary
-	allTestsDone = true;
+	/*allTestsDone = true;
 	stressTestsRunning = 0;
 	stressTimer = new QTimer();
 	stressTimer->setSingleShot(true);
@@ -62,7 +64,7 @@ QtGpuMemtest::QtGpuMemtest(QWidget *parent, Qt::WFlags flags)
 	stressSubTimer->setSingleShot(false);
 	stressSubTimer->setInterval(1000);
 	stressTesting = false;
-	connect(stressSubTimer, SIGNAL(timeout()), this, SLOT(stressTestProgress()));
+	connect(stressSubTimer, SIGNAL(timeout()), this, SLOT(stressTestProgress()));*/
 }
 
 QtGpuMemtest::~QtGpuMemtest()
@@ -120,7 +122,6 @@ void QtGpuMemtest::relistDevices()
 			sprintf_s(gpuMemoryString, sizeof(gpuMemoryString), "%.1f MiB", aDevice->totalGlobalMem / (float)(1024 * 1024));
 
 			aWidget->setTests(tests);
-			aWidget->setController(this);
 			aWidget->setGpuName(QString(gpuString));
 			aWidget->setGpuMemory(QString(gpuMemoryString));
 			aWidget->setFont(QFont("Arial", 14));
@@ -129,8 +130,8 @@ void QtGpuMemtest::relistDevices()
 			aWidget->setMinimumWidth(0);
 
 			// Link up the test controller
-			connect(aWidget, SIGNAL(testStarted(const int, bool)), this, SLOT(testStarted(const int, bool)));
-			//connect(aWidget, SIGNAL(testEnded(const int)), this, SLOT(testEnded(const int)));
+			connect(aWidget, SIGNAL(startTests(int)), this, SLOT(widgetStartTests(int)));
+			connect(aWidget, SIGNAL(stopTests()), this, SLOT(widgetStopTests()));
 
 			deviceWidgets.append(aWidget);
 			devices.append(aDevice);
@@ -151,30 +152,64 @@ void QtGpuMemtest::checkAllDevices(int checked)
 
 void QtGpuMemtest::startChecked()
 {
-	for(int i = 0; i < deviceWidgets.count(); i++)
+	/*for(int i = 0; i < deviceWidgets.count(); i++)
 	{
 		if(deviceWidgets[i]->isChecked())
 		{
 			deviceWidgets[i]->startTestOnce();
 		}
-	}
+	}*/
 }
 
 void QtGpuMemtest::stopAll()
 {
-	for(int i = 0; i < deviceWidgets.count(); i++)
+	/*for(int i = 0; i < deviceWidgets.count(); i++)
 	{
 		deviceWidgets[i]->endTest();
 	}
 
-	stressTestsRunning = 0;
+	stressTestsRunning = 0;*/
+}
+
+void QtGpuMemtest::widgetStartTests(int infinite)
+{
+	int widgetIndex = ((GpuDisplayWidget*)sender())->index();
+	QtGpuThread *gpuThread = new QtGpuThread(((GpuDisplayWidget*)sender())->getTests());
+
+	testThreads.insert(widgetIndex, gpuThread);
+
+	((GpuDisplayWidget*)sender())->setState(GpuDisplayWidget::RunningMode);
+	connect(gpuThread, SIGNAL(testStarting(TestInfo)), deviceWidgets[widgetIndex], SLOT(testStarting(TestInfo)));
+	connect(gpuThread, SIGNAL(testFailed(TestInfo)), deviceWidgets[widgetIndex], SLOT(testFailed(TestInfo)));
+	connect(gpuThread, SIGNAL(testPassed(TestInfo)), deviceWidgets[widgetIndex], SLOT(testPassed(TestInfo)));
+
+	// Connect stopped signal
+	connect(gpuThread, SIGNAL(finished()), this, SLOT(widgetTestsEnded()));
+	connect(gpuThread, SIGNAL(terminated()), this, SLOT(widgetTestsEnded()));
+
+	gpuThread->setDevice(widgetIndex);
+	gpuThread->setEndless((bool)infinite);
+	gpuThread->start();
+}
+
+void QtGpuMemtest::widgetStopTests()
+{
+	int widgetIndex = ((GpuDisplayWidget*)sender())->index();
+	testThreads[widgetIndex]->notifyExit();
+}
+
+void QtGpuMemtest::widgetTestsEnded()
+{
+	int widgetIndex = ((QtGpuThread*)sender())->deviceIndex();
+	testThreads.remove(widgetIndex);
+	deviceWidgets[widgetIndex]->setState(GpuDisplayWidget::StoppedMode);
 }
 
 //
 // Aggregate test options
 //
 
-void QtGpuMemtest::quickTest()
+/*void QtGpuMemtest::quickTest()
 {
 	for(int i = 0; i < tests.count(); i++)
 	{
@@ -213,13 +248,13 @@ void QtGpuMemtest::stressTest()
 	ui.progressBarOverall->setMaximum(ui.customStressDial->value() * 60 + 5);
 	ui.progressBarOverall->setValue(0);
 	stressSubTimer->start();
-}
+}*/
 
 //
 // Test controller
 //
 
-void QtGpuMemtest::testsStarted(int n)
+/*void QtGpuMemtest::testsStarted(int n)
 {
 	if(stressTestsRunning == 0)	// stress test has it's own special progress bar handlers
 	{
@@ -287,9 +322,9 @@ void QtGpuMemtest::testEnded(const int index, QString testName)
 			// AdvancedResultsView is the same as AdvancedView lol
 		}
 	}
-}
+}*/
 
-void QtGpuMemtest::stressTestProgress()
+/*void QtGpuMemtest::stressTestProgress()
 {
 	ui.progressBarOverall->setValue(ui.progressBarOverall->value() + 1);
 }
@@ -302,7 +337,7 @@ void QtGpuMemtest::stressTestEnded()
 		deviceWidgets[i]->endTest();
 		stressTestsRunning--;
 	}
-}
+}*/
 
 //
 // QtGpuMemtest Slots
@@ -410,7 +445,7 @@ void QtGpuMemtest::switchView()
 
 void QtGpuMemtest::copyResults()
 {
-	QString masterOutput;
+	/*QString masterOutput;
 	QTextStream sout(&masterOutput);
 
 	for(int i = 0; i < deviceWidgets.count(); i++)
@@ -420,13 +455,13 @@ void QtGpuMemtest::copyResults()
 	}
 
 	QClipboard *cb = QApplication::clipboard();
-	cb->setText(masterOutput);
+	cb->setText(masterOutput);*/
 }
 
 void QtGpuMemtest::exportResults()
 {
 	// Select file
-	QString fileName = QFileDialog::getSaveFileName(this, tr("Export Results As..."));
+	/*QString fileName = QFileDialog::getSaveFileName(this, tr("Export Results As..."));
 	QFile fout(fileName);
 
 	if(fileName == QString::null)
@@ -446,10 +481,10 @@ void QtGpuMemtest::exportResults()
 		sout << ">>> " << thisWidget->getName() << "\r\n\r\n" << thisWidget->getLog() << "\r\n\r\n";
 	}
 
-	fout.close();
+	fout.close();*/
 }
 
-void QtGpuMemtest::handleBlockingError(int deviceIdx, int err, int cudaErr, QString line, QString file)
+/*void QtGpuMemtest::handleBlockingError(int deviceIdx, int err, int cudaErr, QString line, QString file)
 {
 	QString errMessage;
 	QTextStream(&errMessage) << "From line " << line << " in file " << file << ":\n";
@@ -470,4 +505,4 @@ void QtGpuMemtest::handleProgress(int deviceIdx, int testNo, int action)
 	QString progressMessage;
 	QTextStream(&progressMessage) << deviceIdx << ": " << testNo << " action " << action;
 	QMessageBox::information(this, "Progress Notification", progressMessage);
-}
+}*/

@@ -11,8 +11,7 @@
  *************************************************************************************/
 
 int
-test4(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err_count, unsigned long* err_addr,
-      unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term)
+test4(TestInputParams* tip, TestOutputParams* top, bool *term)
 {
 	unsigned int p1;
 	//if (global_pattern == 0){
@@ -28,13 +27,13 @@ test4(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* 
 	//DEBUG_PRINTF("Test4: Moving inversions test, with random pattern 0x%x and 0x%x\n", p1, p2);
 
 repeat:
-	err += move_inv_test(ptr, tot_num_blocks, p1, p2, err_count, err_addr, err_expect, err_current, err_second_read, term);
+	err += move_inv_test(tip->ptr, tip->tot_num_blocks, p1, p2, top->err_vector, top->err_count, term);
 
 	if (err == 0 && iteration == 0)
 	{
 		return cudaSuccess;
 	}
-	if (iteration < MAX_ITERATION)
+	if (iteration < tip->num_iterations)
 	{
 		//if(*term == true) break;
 		//PRINTF("%dth repeating test4 because there are %d errors found in last run\n", iteration, err);

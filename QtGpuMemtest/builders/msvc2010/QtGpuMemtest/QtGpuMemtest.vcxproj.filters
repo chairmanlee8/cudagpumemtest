@@ -163,6 +163,9 @@
     <ClInclude Include="..\..\..\source\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\resource.rc">
@@ -174,6 +177,36 @@
       <Filter>Source Files\GPU Kernels</Filter>
     </CudaCompile>
     <CudaCompile Include="..\..\..\source\test0.cu">
+      <Filter>Source Files\GPU Kernels</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\source\test1.cu">
+      <Filter>Source Files\GPU Kernels</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\source\test2.cu">
+      <Filter>Source Files\GPU Kernels</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\source\test3.cu">
+      <Filter>Source Files\GPU Kernels</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\source\test4.cu">
+      <Filter>Source Files\GPU Kernels</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\source\test5.cu">
+      <Filter>Source Files\GPU Kernels</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\source\test6.cu">
+      <Filter>Source Files\GPU Kernels</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\source\test7.cu">
+      <Filter>Source Files\GPU Kernels</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\source\test8.cu">
+      <Filter>Source Files\GPU Kernels</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\source\test9.cu">
+      <Filter>Source Files\GPU Kernels</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\..\source\test10.cu">
       <Filter>Source Files\GPU Kernels</Filter>
     </CudaCompile>
   </ItemGroup>

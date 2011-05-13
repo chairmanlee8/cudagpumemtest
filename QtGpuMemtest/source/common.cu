@@ -36,7 +36,7 @@ unsigned long get_random_num_long(void)
 	return ret;
 }
 
-/*__global__ void kernel_move_inv_write(char* _ptr, char* end_ptr, unsigned int pattern)
+__global__ void kernel_move_inv_write(char* _ptr, char* end_ptr, unsigned int pattern)
 {
 	unsigned int i;
 	unsigned int* ptr = (unsigned int*) (_ptr + blockIdx.x*BLOCKSIZE);
@@ -55,8 +55,7 @@ unsigned long get_random_num_long(void)
 
 
 __global__ void
-kernel_move_inv_readwrite(char* _ptr, char* end_ptr, unsigned int p1, unsigned int p2, unsigned int* err,
-                          unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read)
+kernel_move_inv_readwrite(char* _ptr, char* end_ptr, unsigned int p1, unsigned int p2, MemoryError* local_errors, int* local_count)
 {
 	unsigned int i;
 	unsigned int* ptr = (unsigned int*) (_ptr + blockIdx.x*BLOCKSIZE);
@@ -69,7 +68,7 @@ kernel_move_inv_readwrite(char* _ptr, char* end_ptr, unsigned int p1, unsigned i
 	{
 		if (ptr[i] != p1)
 		{
-			RECORD_ERR(err, &ptr[i], p1, ptr[i]);
+			record_error(local_errors, local_count, &ptr[i], p1);
 		}
 		ptr[i] = p2;
 
@@ -80,8 +79,7 @@ kernel_move_inv_readwrite(char* _ptr, char* end_ptr, unsigned int p1, unsigned i
 
 
 __global__ void
-kernel_move_inv_read(char* _ptr, char* end_ptr,  unsigned int pattern, unsigned int* err,
-                     unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read )
+kernel_move_inv_read(char* _ptr, char* end_ptr,  unsigned int pattern, MemoryError* local_errors, int* local_count)
 {
 	unsigned int i;
 	unsigned int* ptr = (unsigned int*) (_ptr + blockIdx.x*BLOCKSIZE);
@@ -94,7 +92,7 @@ kernel_move_inv_read(char* _ptr, char* end_ptr,  unsigned int pattern, unsigned 
 	{
 		if (ptr[i] != pattern)
 		{
-			RECORD_ERR(err, &ptr[i], pattern, ptr[i]);
+			record_error(local_errors, local_count, &ptr[i], pattern);
 		}
 	}
 
@@ -103,8 +101,7 @@ kernel_move_inv_read(char* _ptr, char* end_ptr,  unsigned int pattern, unsigned 
 
 
 unsigned int
-move_inv_test(char* ptr, unsigned int tot_num_blocks, unsigned int p1, unsigned p2, unsigned int* err_count, unsigned long* err_addr,
-              unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term)
+move_inv_test(char* ptr, unsigned int tot_num_blocks, unsigned int p1, unsigned p2, MemoryError* local_errors, int* local_count, bool *term)
 {
 
 	unsigned int i;
@@ -126,7 +123,7 @@ move_inv_test(char* ptr, unsigned int tot_num_blocks, unsigned int p1, unsigned 
 		if(*term == true) break;
 		dim3 grid;
 		grid.x= GRIDSIZE;
-		kernel_move_inv_readwrite<<<grid, 1>>>(ptr + i*BLOCKSIZE, end_ptr, p1, p2, err_count, err_addr, err_expect, err_current, err_second_read); SYNC_CUERR;
+		kernel_move_inv_readwrite<<<grid, 1>>>(ptr + i*BLOCKSIZE, end_ptr, p1, p2, local_errors, local_count); SYNC_CUERR;
 		//err += error_checking("move_inv_readwrite",  i);
 		//SHOW_PROGRESS("move_inv_readwrite", i, tot_num_blocks);
 	}
@@ -136,11 +133,11 @@ move_inv_test(char* ptr, unsigned int tot_num_blocks, unsigned int p1, unsigned 
 		if(*term == true) break;
 		dim3 grid;
 		grid.x= GRIDSIZE;
-		kernel_move_inv_read<<<grid, 1>>>(ptr + i*BLOCKSIZE, end_ptr, p2, err_count, err_addr, err_expect, err_current, err_second_read); SYNC_CUERR;
+		kernel_move_inv_read<<<grid, 1>>>(ptr + i*BLOCKSIZE, end_ptr, p2, local_errors, local_count); SYNC_CUERR;
 		//err += error_checking("move_inv_read",  i);
 		//SHOW_PROGRESS("move_inv_read", i, tot_num_blocks);
 	}
 
 	return err;
 
-}*/
+}

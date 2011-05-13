@@ -21,6 +21,13 @@ void QtGpuThread::run()
 	cudaThreadSynchronize();
 	CUERR("Could not set CUDA device as active.");
 
+	// Allocate small memory
+	cudaMalloc((void**)&detectedErrors, MAX_ERR_RECORD_COUNT * sizeof(MemoryError));
+	CUERR("Could not allocate memory for errors.");
+
+	cudaMalloc((void**)&numberErrors, sizeof(int));
+	CUERR("Could not allocate memory for number of errors.");
+
 	char* ptr = NULL;
 
 	tot_num_blocks += 1;
@@ -30,7 +37,7 @@ void QtGpuThread::run()
 
 		if(tot_num_blocks <= 0)
 		{
-			emit log(device, QString(""), QString("Could not allocate any memory on this device."));
+			emit log(TestInfo(), QString("Could not allocate any memory on this device."));
 			return;
 		}
 
@@ -38,19 +45,13 @@ void QtGpuThread::run()
 	}
 	while(cudaGetLastError() != cudaSuccess);
 
-	if(infiniteFlag)
-	{
-		while(!terminationFlag) run_tests(ptr, tot_num_blocks);
-	}
-	else
-	{
-		run_tests(ptr, tot_num_blocks);
-	}
+	// Run tests
+	do { run_tests_impl(ptr, tot_num_blocks); } while (infiniteFlag & !terminationFlag);
 
 	cudaFree(ptr);
 }
 
-void QtGpuThread::run_tests(char* ptr, unsigned int tot_num_blocks)
+void QtGpuThread::run_tests_impl(char* ptr, unsigned int tot_num_blocks)
 {
 	// Run each test and do some other stuff as described in the flowchart
 	for(int i = 0; i < tests.size(); i++)
@@ -61,14 +62,14 @@ void QtGpuThread::run_tests(char* ptr, unsigned int tot_num_blocks)
 			for(int j = i; j < tests.size(); j++)
 			{
 				if(tests[j].testEnabled)
-					emit ended(device, tests[j].testName);
+					emit testEnded(tests[j]);
 			}
 			break;
 		}
 		if(!tests[i].testEnabled) continue;
 
 		//emit log(device, tests[i].testName, QString("Test started."));
-		emit starting(device, tests[i].testName);
+		emit testStarting(tests[i]);
 
 		TestInputParams * tip = new TestInputParams;
 		TestOutputParams * top = new TestOutputParams;
@@ -76,6 +77,8 @@ void QtGpuThread::run_tests(char* ptr, unsigned int tot_num_blocks)
 		tip->ptr = ptr;
 		tip->tot_num_blocks = tot_num_blocks;
 		tip->num_iterations = 1;
+		top->err_vector = detectedErrors;
+		top->err_count = numberErrors;
 
 		int returnCode = (*(tests[i].testFunc))(tip, top, &terminationFlag);
 
@@ -84,37 +87,45 @@ void QtGpuThread::run_tests(char* ptr, unsigned int tot_num_blocks)
 			QString errString;
 			QTextStream(&errString) << "CUDA failure (err code: " << returnCode << ") occurred while running test.";
 
-			emit log(device, tests[i].testName, errString);
-			emit failed(device, tests[i].testName);
+			emit log(tests[i], errString);
+			emit testFailed(tests[i]);
 		}
 		else
 		{
+			int local_count = 0;
+			MemoryError *local_errors = new MemoryError[MAX_ERR_RECORD_COUNT];
+
+			cudaMemcpy(&local_count, top->err_count, sizeof(int), cudaMemcpyDeviceToHost);
+			cudaMemcpy(local_errors, top->err_vector, sizeof(MemoryError) * MAX_ERR_RECORD_COUNT, cudaMemcpyDeviceToHost);
+
 			// log the result
-			if(top->err_vector.size() != 0)
+			if(local_count > 0)
 			{
 				// got some memory errors, record them and emit fail
-				for(int n = 0; n < top->err_vector.size(); n++)
+				for(int n = 0; n < local_count; n++)
 				{
 					// log each error
 					QString memError;
 					QTextStream memErrorStream(&memError);
-					memErrorStream << qSetFieldWidth(8) << qSetPadChar('0') << right << hex << "Error: Address 0x" << top->err_vector[n].addr << " has 0x" << top->err_vector[n].current << " but expected 0x" << top->err_vector[n].expected;
+					memErrorStream << qSetFieldWidth(8) << qSetPadChar('0') << right << hex << "Error: Address 0x" << local_errors[n].addr << " has 0x" << local_errors[n].current << " but expected 0x" << local_errors[n].expected;
 					memErrorStream.flush();
 
-					emit log(device, tests[i].testName, memError);
+					emit log(tests[i], memError);
 				}
 
-				emit failed(device, tests[i].testName);
+				emit testFailed(tests[i]);
 			}
 			else
 			{
-				emit passed(device, tests[i].testName);
+				emit testPassed(tests[i]);
 			}
+
+			delete [] local_errors;
 		}
 
 		//TODO: I commented the emit's here out because stress test will produce too many of these
 		//emit log(device, tests[i].testName, QString("Test ended."));
-		emit ended(device, tests[i].testName);
+		emit testEnded(tests[i]);
 	}
 }
 
@@ -124,25 +135,8 @@ cudaError_t QtGpuThread::cudaError(QString msgFail)
 	cudaError_t cuda_err;
 	if((cuda_err = cudaGetLastError()) != cudaSuccess)
 	{
-		emit log(device, QString(""), msgFail);
+		emit log(TestInfo(), msgFail);
 	}
 
 	return cuda_err;
 }
-
-/*inline cudaError_t QtGpuThread::cudaError(QString line, QString file)
-{
-	cudaError_t cuda_err;
-	if((cuda_err = cudaGetLastError()) != cudaSuccess)
-	{
-		emit blockingError(device, 0, cuda_err, line, file);
-	}
-
-	return cuda_err;
-}
-
-inline cudaError_t QtGpuThread::syncCudaError(QString line, QString file)
-{
-	cudaThreadSynchronize();
-	return cudaError(line, file);
-}*/

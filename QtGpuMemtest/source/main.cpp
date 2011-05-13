@@ -8,6 +8,8 @@ int main(int argc, char *argv[])
 	QCoreApplication::setOrganizationDomain("http://cudagpumemtest.sourceforge.net/");
 	QCoreApplication::setApplicationName("CUDA GPU Memtest");
 
+	qRegisterMetaType<TestInfo>("TestInfo");
+
 	QApplication a(argc, argv);
 	QtGpuMemtest w;
 	w.show();

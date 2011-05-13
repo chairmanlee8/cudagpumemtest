@@ -14,8 +14,8 @@
    <string>CUDA GPU Memtest</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>:/QtGpuMemtest/ncsa.ico</normaloff>:/QtGpuMemtest/ncsa.ico</iconset>
+   <iconset resource="qtgpumemtest.qrc">
+    <normaloff>:/QtGpuMemtest/resources/ncsa.ico</normaloff>:/QtGpuMemtest/resources/ncsa.ico</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">

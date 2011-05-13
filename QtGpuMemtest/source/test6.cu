@@ -48,8 +48,7 @@ kernel_movinv32_write(char* _ptr, char* end_ptr, unsigned int pattern,
 
 __global__ void
 kernel_movinv32_readwrite(char* _ptr, char* end_ptr, unsigned int pattern,
-                          unsigned int lb, unsigned int sval, unsigned int offset, unsigned int * err,
-                          unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read)
+                          unsigned int lb, unsigned int sval, unsigned int offset, MemoryError* local_error, int* local_count)
 {
 	unsigned int i;
 	unsigned int* ptr = (unsigned int*) (_ptr + blockIdx.x*BLOCKSIZE);
@@ -65,7 +64,7 @@ kernel_movinv32_readwrite(char* _ptr, char* end_ptr, unsigned int pattern,
 	{
 		if (ptr[i] != pat)
 		{
-			RECORD_ERR(err, &ptr[i], pat, ptr[i]);
+			record_error(local_error, local_count, &ptr[i], pat);
 		}
 
 		ptr[i] = ~pat;
@@ -90,8 +89,7 @@ kernel_movinv32_readwrite(char* _ptr, char* end_ptr, unsigned int pattern,
 
 __global__ void
 kernel_movinv32_read(char* _ptr, char* end_ptr, unsigned int pattern,
-                     unsigned int lb, unsigned int sval, unsigned int offset, unsigned int * err,
-                     unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read)
+                     unsigned int lb, unsigned int sval, unsigned int offset, MemoryError *local_error, int *local_count)
 {
 	unsigned int i;
 	unsigned int* ptr = (unsigned int*) (_ptr + blockIdx.x*BLOCKSIZE);
@@ -107,7 +105,7 @@ kernel_movinv32_read(char* _ptr, char* end_ptr, unsigned int pattern,
 	{
 		if (ptr[i] != ~pat)
 		{
-			RECORD_ERR(err, &ptr[i], ~pat, ptr[i]);
+			record_error(local_error, local_count, &ptr[i], ~pat);
 		}
 
 		k++;
@@ -130,8 +128,7 @@ kernel_movinv32_read(char* _ptr, char* end_ptr, unsigned int pattern,
 
 int
 movinv32(char* ptr, unsigned int tot_num_blocks, unsigned int pattern,
-         unsigned int lb, unsigned int sval, unsigned int offset, unsigned int* err_count, unsigned long* err_addr,
-         unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term)
+         unsigned int lb, unsigned int sval, unsigned int offset, MemoryError* local_error, int *local_count, bool *term)
 {
 
 	unsigned int i;
@@ -152,7 +149,7 @@ movinv32(char* ptr, unsigned int tot_num_blocks, unsigned int pattern,
 		if(*term == true) break;
 		dim3 grid;
 		grid.x= GRIDSIZE;
-		kernel_movinv32_readwrite<<<grid, 1>>>(ptr + i*BLOCKSIZE, end_ptr, pattern, lb,sval, offset, err_count, err_addr, err_expect, err_current, err_second_read); SYNC_CUERR;
+		kernel_movinv32_readwrite<<<grid, 1>>>(ptr + i*BLOCKSIZE, end_ptr, pattern, lb,sval, offset, local_error, local_count); SYNC_CUERR;
 		//error_checking("test6[moving inversion 32 readwrite]",  i);
 		//SHOW_PROGRESS("test6[moving inversion 32 readwrite]", i, tot_num_blocks);
 	}
@@ -162,7 +159,7 @@ movinv32(char* ptr, unsigned int tot_num_blocks, unsigned int pattern,
 		if(*term == true) break;
 		dim3 grid;
 		grid.x= GRIDSIZE;
-		kernel_movinv32_read<<<grid, 1>>>(ptr + i*BLOCKSIZE, end_ptr, pattern, lb,sval, offset, err_count, err_addr, err_expect, err_current, err_second_read); SYNC_CUERR;
+		kernel_movinv32_read<<<grid, 1>>>(ptr + i*BLOCKSIZE, end_ptr, pattern, lb,sval, offset, local_error, local_count); SYNC_CUERR;
 		//error_checking("test6[moving inversion 32 read]",  i);
 		//SHOW_PROGRESS("test6[moving inversion 32 read]", i, tot_num_blocks);
 	}
@@ -173,8 +170,7 @@ movinv32(char* ptr, unsigned int tot_num_blocks, unsigned int pattern,
 
 
 int
-test6(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err, unsigned long* err_addr,
-      unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term)
+test6(TestInputParams *tip, TestOutputParams *top, bool *term)
 {
 	unsigned int i;
 
@@ -184,9 +180,9 @@ test6(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* 
 	{
 
 		//DEBUG_PRINTF("Test6[move inversion 32 bits test]: pattern =0x%x, offset=%d\n", pattern, i);
-		movinv32(ptr, tot_num_blocks, pattern, 1, 0, i, err, err_addr, err_expect, err_current, err_second_read, term);
+		movinv32(tip->ptr, tip->tot_num_blocks, pattern, 1, 0, i, top->err_vector, top->err_count, term);
 		//DEBUG_PRINTF("Test6[move inversion 32 bits test]: pattern =0x%x, offset=%d\n", ~pattern, i);
-		movinv32(ptr, tot_num_blocks, ~pattern, 0xfffffffe, 1, i, err, err_addr, err_expect, err_current, err_second_read, term);
+		movinv32(tip->ptr, tip->tot_num_blocks, ~pattern, 0xfffffffe, 1, i, top->err_vector, top->err_count, term);
 
 	}
 	return cudaSuccess;

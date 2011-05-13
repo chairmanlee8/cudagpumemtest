@@ -3,6 +3,7 @@
 
 #include <QtGui>
 
+#include "common.h"
 #include "testiconwidget.h"
 #include "resultsdisplay.h"
 #include "gputests.h"
@@ -17,72 +18,67 @@ public:
 	GpuDisplayWidget(QWidget *parent = 0);
 	~GpuDisplayWidget();
 
-	QFont font() const;
+	static enum Mode { SelectingMode, StoppedMode, RunningMode };
+
+	QFont font() const { return labelGpu->font(); };
 	void setFont(QFont const &);
 
-	int index() const;
-	void setIndex(int idx);
+	int index() const { return widgetIndex; };
+	void setIndex(int idx) { widgetIndex = idx; };
 
-	QtGpuMemtest* controller() { return m_controller; };
-	void setController(QtGpuMemtest* a) { m_controller = a; };
+	QString getName() { return labelGpu->text(); };
 
-	QString getLog();
-	QString getName() { return m_labelGpu->text(); };
+	void setGpuName(const QString& gpuName) { labelGpu->setText(gpuName); };
+	void setGpuMemory(const QString& gpuMemory) { labelMemory->setText(gpuMemory); };
+	void setTests(QVector<TestInfo>& aTests);
+	QVector<TestInfo> getTests();
 
 public slots:
-	void setGpuName(const QString& gpuName);
-	void setGpuMemory(const QString& gpuMemory);
-	void setTestStatus(const TestStatus& gpuTestStatus);
-	void setCheckStart(const int checked);
-	void setTests(QVector<TestInfo>& aTests);
+	void setCheckStart(const int checked) { checkStart->setChecked(checked > 0); };
+	void setState(Mode newState);
+	void setStoppedState() { setState(StoppedMode); };
+	
+	void testFailed(TestInfo test);
+	void testPassed(TestInfo test);
+	void testStarting(TestInfo test);
 
-	void startTest(bool infinite = false);
-	void startTestOnce();	// TODO: must be a better solution than this crap
-	void startTestInfinite();
-	void endTest();
-	void displayLog();
-
-	void testFailed(int deviceIdx, QString testName);
-	void testPassed(int deviceIdx, QString testName);
-	void testStarting(int deviceIdx, QString testName);
-	void testLog(int deviceIdx, QString testName, QString logMessage);
-
-	bool isChecked() { return m_checkStart->checkState() == Qt::Checked; };
+	bool isChecked() { return checkStart->checkState() == Qt::Checked; };
 	bool isTestFailed();
 
+	void maskSelect(TestInfo pivot, bool mask);
+
+	void stopButtonClicked();
+
 signals:
-	void testStarted(const int index, bool infinite);
-	void testEnded(const int index);
+	void startTests(int infinite);
+	void stopTests();
+	void displayResults();
 
 protected:
 	virtual void paintEvent(QPaintEvent* event);
 
 private:
-	QtGpuMemtest *m_controller;
 
 	QVBoxLayout *layout;
 	QHBoxLayout *innerTopLayout;
 	QHBoxLayout *innerBottomLayout;
 
-	QLabel		*m_labelGpu;
-	QLabel		*m_labelMemory;
-	QLabel		*m_labelStopping;
-	QHBoxLayout	*m_progress;
-	QCheckBox	*m_checkStart;
+	QLabel		*labelGpu;
+	QLabel		*labelMemory;
+	QLabel		*labelStopping;
+	QHBoxLayout	*progress;
+	QCheckBox	*checkStart;
 
 	QToolButton *startButton;
 	QToolButton *startLoopButton;
-	QToolButton *startStressButton;
 	QToolButton *stopButton;
 	QToolButton *resultsButton;
 
-	int			m_widgetIndex;
+	int			widgetIndex;
 
-	QVector<TestInfo>			tests;
 	QVector<TestIconWidget*>	testWidgets;
-	QVector<QString>			log;
 
-	QtGpuThread	*gpuThread;
+	Mode		state;
 
 };
 

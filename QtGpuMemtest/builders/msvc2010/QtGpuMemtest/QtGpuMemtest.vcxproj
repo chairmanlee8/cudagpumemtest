@@ -156,6 +156,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB "-I." "-I.\GeneratedFiles" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I." "-I." "-I." "-I."</Command>
     </CustomBuild>
+    <ClInclude Include="..\..\..\source\common.h" />
     <ClInclude Include="..\..\..\source\resource.h" />
     <CustomBuild Include="..\..\..\source\testiconwidget.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
@@ -186,6 +187,16 @@
   <ItemGroup>
     <CudaCompile Include="..\..\..\source\common.cu" />
     <CudaCompile Include="..\..\..\source\test0.cu" />
+    <CudaCompile Include="..\..\..\source\test1.cu" />
+    <CudaCompile Include="..\..\..\source\test10.cu" />
+    <CudaCompile Include="..\..\..\source\test2.cu" />
+    <CudaCompile Include="..\..\..\source\test3.cu" />
+    <CudaCompile Include="..\..\..\source\test4.cu" />
+    <CudaCompile Include="..\..\..\source\test5.cu" />
+    <CudaCompile Include="..\..\..\source\test6.cu" />
+    <CudaCompile Include="..\..\..\source\test7.cu" />
+    <CudaCompile Include="..\..\..\source\test8.cu" />
+    <CudaCompile Include="..\..\..\source\test9.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2CFF8A19-739B-4425-A32F-EBB489C6F93D}</ProjectGuid>
@@ -236,6 +247,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>cudart.lib;qtmaind.lib;QtCored4.lib;QtGuid4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CudaCompile>
+      <CodeGeneration>compute_11,sm_11</CodeGeneration>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

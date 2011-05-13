@@ -1,12 +1,15 @@
 #include "testiconwidget.h"
+#include <algorithm>
 
 TestIconWidget::TestIconWidget(TestInfo& aTestInfo, QWidget *parent)
-	: QWidget(parent), testInfo(aTestInfo), testStatus(TestNotStarted), widgetMode(SelectMode), adjWidth(26)
+	: QWidget(parent), testStatus(TestNotStarted), widgetMode(SelectMode)
 {
 	// setup this widget's resizing behavior
 	setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+	
+	// setup the test info
+	setTestInfo(aTestInfo);
 
-	this->setToolTip(aTestInfo.testName);
 	mouseClicked = false;
 	hover = false;
 
@@ -19,6 +22,18 @@ TestIconWidget::TestIconWidget(TestInfo& aTestInfo, QWidget *parent)
 
 TestIconWidget::~TestIconWidget()
 {
+}
+
+void TestIconWidget::setTestInfo(TestInfo& anotherTestInfo)
+{
+	testInfo = anotherTestInfo;
+
+	this->setToolTip(testInfo.testName);
+	// Calculate width
+	QFontMetrics fm(font());
+	adjWidth = std::max(26, 20 + fm.width(testInfo.testShortName));
+
+	update();
 }
 
 void TestIconWidget::setStatus(TestStatus aStatus)
@@ -39,7 +54,7 @@ void TestIconWidget::setStatus(TestStatus aStatus)
 	update();
 }
 
-void TestIconWidget::setMode(Mode m)
+void TestIconWidget::setState(Mode m)
 {
 	widgetMode = m;
 	update();
@@ -108,14 +123,14 @@ void TestIconWidget::paintEvent(QPaintEvent* event)
 
 		if(testInfo.testEnabled)
 		{
-			p.setPen(QPen(greenBrush, 4));
+			p.setPen(QPen(greenBrush, 6));
 			p.drawRect(frameRect);
 		}
 		else
 		{
 			if(hover)
 			{
-				p.setPen(QPen(darkGrayBrush, 4));
+				p.setPen(QPen(darkGrayBrush, 6));
 				p.drawRect(frameRect);
 			}
 		}
@@ -149,6 +164,18 @@ void TestIconWidget::mouseReleaseEvent(QMouseEvent* event)
 
 		mouseClicked = false;
 	}
+}
+
+void TestIconWidget::mouseDoubleClickEvent(QMouseEvent* event)
+{
+	// If double click is on a solo-ed item, select all
+	// If double click is on a non-solo selected item, solo it
+	// If double click is on a non-selected item, select all except it (is this intuitive?)
+
+	testInfo.testEnabled = !testInfo.testEnabled;
+	emit maskEnable(testInfo, testInfo.testEnabled);
+
+	update();
 }
 
 void TestIconWidget::enterEvent(QEvent* event)

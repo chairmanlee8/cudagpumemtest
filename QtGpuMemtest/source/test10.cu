@@ -35,8 +35,7 @@ __global__ void test10_kernel_write(char* ptr, int memsize, TYPE p1)
 	return;
 }
 
-__global__ void test10_kernel_readwrite(char* ptr, int memsize, TYPE p1, TYPE p2,  unsigned int* err,
-                                        unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read)
+__global__ void test10_kernel_readwrite(char* ptr, int memsize, TYPE p1, TYPE p2, MemoryError *local_error, int *local_count)
 {
 	int i;
 	int avenumber = memsize/(gridDim.x*gridDim.y);
@@ -50,7 +49,7 @@ __global__ void test10_kernel_readwrite(char* ptr, int memsize, TYPE p1, TYPE p2
 		localp = mybuf[index];
 		if (localp != p1)
 		{
-			RECORD_ERR(err, &mybuf[index], p1, localp);
+			record_error(local_error, local_count, &mybuf[index], p1);
 		}
 		mybuf[index] = p2;
 	}
@@ -60,7 +59,7 @@ __global__ void test10_kernel_readwrite(char* ptr, int memsize, TYPE p1, TYPE p2
 		localp = mybuf[index];
 		if (localp!= p1)
 		{
-			RECORD_ERR(err, &mybuf[index], p1, localp);
+			record_error(local_error, local_count, &mybuf[index], p1);
 		}
 		mybuf[index] = p2;
 	}
@@ -68,8 +67,7 @@ __global__ void test10_kernel_readwrite(char* ptr, int memsize, TYPE p1, TYPE p2
 	return;
 }
 
-int test10(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err_count, unsigned long* err_addr,
-           unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term)
+int test10(TestInputParams *tip, TestOutputParams *top, bool *term)
 {
 	TYPE p1;
 	/*if (global_pattern_long){
@@ -84,20 +82,20 @@ int test10(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned 
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 
-	int n = num_iterations;
+	int n = tip->num_iterations;
 	float elapsedtime;
 	dim3 gridDim(STRESS_GRIDSIZE);
 	dim3 blockDim(STRESS_BLOCKSIZE);
 	cudaEventRecord(start, stream);
 
 	//PRINTF("Test10 with pattern=0x%lx\n", p1);
-	test10_kernel_write<<<gridDim, blockDim, 0, stream>>>(ptr, tot_num_blocks*BLOCKSIZE, p1); SYNC_CUERR;
+	test10_kernel_write<<<gridDim, blockDim, 0, stream>>>(tip->ptr, tip->tot_num_blocks*BLOCKSIZE, p1); SYNC_CUERR;
 	for(int i =0; i < n ; i ++)
 	{
 		if(*term == true) break;
 
-		test10_kernel_readwrite<<<gridDim, blockDim, 0, stream>>>(ptr, tot_num_blocks*BLOCKSIZE, p1, p2,
-		        err_count, err_addr, err_expect, err_current, err_second_read); SYNC_CUERR;
+		test10_kernel_readwrite<<<gridDim, blockDim, 0, stream>>>(tip->ptr, tip->tot_num_blocks*BLOCKSIZE, p1, p2,
+		        top->err_vector, top->err_count); SYNC_CUERR;
 		p1 = ~p1;
 		p2 = ~p2;
 

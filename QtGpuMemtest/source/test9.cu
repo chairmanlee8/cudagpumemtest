@@ -10,27 +10,22 @@
  *
  **********************************************************************************/
 
-__global__ extern void kernel_move_inv_write(char* _ptr, char* end_ptr, unsigned int pattern);
-__global__ extern void kernel_move_inv_readwrite(char* _ptr, char* end_ptr, unsigned int p1, unsigned int p2, unsigned int* err, unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read);
-__global__ extern void kernel_move_inv_read(char* _ptr, char* end_ptr,  unsigned int pattern, unsigned int* err, unsigned long* err_addr, unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read );
-
 int
-test9(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* err_count, unsigned long* err_addr,
-      unsigned long* err_expect, unsigned long* err_current, unsigned long* err_second_read, bool *term)
+test9(TestInputParams *tip, TestOutputParams *top, bool *term)
 {
 
 	unsigned int p1 = 0;
 	unsigned int p2 = ~p1;
 
 	unsigned int i;
-	char* end_ptr = ptr + tot_num_blocks* BLOCKSIZE;
+	char* end_ptr = tip->ptr + tip->tot_num_blocks* BLOCKSIZE;
 
-	for (i= 0; i < tot_num_blocks; i+= GRIDSIZE)
+	for (i= 0; i < tip->tot_num_blocks; i+= GRIDSIZE)
 	{
 		if(*term == true) break;
 		dim3 grid;
 		grid.x= GRIDSIZE;
-		kernel_move_inv_write<<<grid, 1>>>(ptr + i*BLOCKSIZE, end_ptr, p1); SYNC_CUERR;
+		kernel_move_inv_write<<<grid, 1>>>(tip->ptr + i*BLOCKSIZE, end_ptr, p1); SYNC_CUERR;
 		//SHOW_PROGRESS("test9[bit fade test, write]", i, tot_num_blocks);
 	}
 
@@ -43,12 +38,12 @@ test9(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* 
 		if(*term == true) break;
 	}
 
-	for (i=0; i < tot_num_blocks; i+= GRIDSIZE)
+	for (i=0; i < tip->tot_num_blocks; i+= GRIDSIZE)
 	{
 		if(*term == true) break;
 		dim3 grid;
 		grid.x= GRIDSIZE;
-		kernel_move_inv_readwrite<<<grid, 1>>>(ptr + i*BLOCKSIZE, end_ptr, p1, p2, err_count, err_addr, err_expect, err_current, err_second_read); SYNC_CUERR;
+		kernel_move_inv_readwrite<<<grid, 1>>>(tip->ptr + i*BLOCKSIZE, end_ptr, p1, p2, top->err_vector, top->err_count); SYNC_CUERR;
 		//error_checking("test9[bit fade test, readwrite]",  i);
 		//SHOW_PROGRESS("test9[bit fade test, readwrite]", i, tot_num_blocks);
 	}
@@ -62,12 +57,12 @@ test9(char* ptr, unsigned int tot_num_blocks, int num_iterations, unsigned int* 
 		if(*term == true) break;
 	}
 
-	for (i=0; i < tot_num_blocks; i+= GRIDSIZE)
+	for (i=0; i < tip->tot_num_blocks; i+= GRIDSIZE)
 	{
 		if(*term == true) break;
 		dim3 grid;
 		grid.x= GRIDSIZE;
-		kernel_move_inv_read<<<grid, 1>>>(ptr + i*BLOCKSIZE, end_ptr, p2, err_count, err_addr, err_expect, err_current, err_second_read); SYNC_CUERR;
+		kernel_move_inv_read<<<grid, 1>>>(tip->ptr + i*BLOCKSIZE, end_ptr, p2, top->err_vector, top->err_count); SYNC_CUERR;
 		//error_checking("test9[bit fade test, read]",  i);
 		//SHOW_PROGRESS("test9[bit fade test, read]", i, tot_num_blocks);
 	}

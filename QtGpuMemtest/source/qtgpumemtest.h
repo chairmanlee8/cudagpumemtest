@@ -8,7 +8,7 @@
 #include <QIODevice>
 #include <QSettings>
 
-#include "../../GpuDisplayWidget/GpuDisplayWidget/gpudisplaywidget.h"
+#include "gpudisplaywidget.h"
 #include "ui_qtgpumemtest.h"
 
 #include <cuda_runtime_api.h>
@@ -29,14 +29,14 @@ public slots:
 	void setView(ViewMode viewMode);
 
 	// some menu and toolbar functions
-	void about();
-	void exit();
 	void copyResults();
 	void exportResults();
+	void exit();
+	void about();
 	void clearDevices();
 	void relistDevices();
-	void checkAllDevices(int checked);
 	void switchView();
+	void checkAllDevices(int checked);
 	void startChecked();
 	void stopAll();
 	void returnHome() { setView(BasicView); };
@@ -46,18 +46,20 @@ public slots:
 	void endTests(int deviceIdx);*/
 
 	// test controller, temporary solution by catching signals from the advanced views
-	void testsStarted(int n);
-	void testEnded(const int index, QString testName);
-	void stressTestEnded();
-	void stressTestProgress();
-
-	void handleBlockingError(int deviceIdx, int err, int cudaErr, QString line, QString file);
-	void handleNonBlockingError(int deviceIdx, int warn, QString line, QString file);
-	void handleProgress(int deviceIdx, int testNo, int action);
+	/*void testsStarted(int n);
+	void testEnded(const int index, QString testName);*/
+	/*void stressTestEnded();
+	void stressTestProgress();*/
 
 	// Aggregate test options
-	void quickTest();
-	void stressTest();
+	/*void quickTest();
+	void stressTest();*/
+
+	void widgetStartTests(int infinite);
+	void widgetStopTests();
+	void widgetTestsEnded();
+
+	//void widgetDisplayResults();
 
 private:
 	Ui::QtGpuMemtestClass ui;
@@ -68,11 +70,11 @@ private:
 	QMap<int, QtGpuThread*>		testThreads;
 	QVector<TestInfo>			tests;				// default tests (default template)
 
-	bool allTestsDone;
+	/*bool allTestsDone;
 	QTimer* stressTimer;
 	QTimer* stressSubTimer;
 	int stressTestsRunning;
-	bool stressTesting;
+	bool stressTesting;*/
 };
 
 #endif // QTGPUMEMTEST_H
