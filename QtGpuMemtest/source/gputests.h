@@ -41,18 +41,20 @@ class QtGpuThread : public QThread
 {
 	Q_OBJECT
 
-public:
-	QtGpuThread(QVector<TestInfo>& aTests, QObject* parent = 0);
-	QtGpuThread(QObject* parent = 0) : QThread(parent) { };
-
 protected:
 	void run();
 	void run_tests_impl(char* ptr, unsigned int tot_num_blocks);
 
-public slots:
+public:
+	QtGpuThread(QVector<TestInfo>& aTests, QObject* parent = 0);
+	QtGpuThread(QObject* parent = 0) : QThread(parent) { };
+
 	void setDevice(int idx)	{ device = idx;	}
 	int deviceIndex() { return device; }
 
+	int totalProgressParts();
+
+public slots:
 	void notifyExit() { terminationFlag = true; }
 	void setEndless(bool b)	{ infiniteFlag = b;	}
 
@@ -61,6 +63,7 @@ signals:
 	void testPassed(TestInfo test);
 	void testEnded(TestInfo test);
 	void testStarting(TestInfo test);
+	void progressPart();
 	void log(TestInfo test, QString logMessage);
 
 protected:

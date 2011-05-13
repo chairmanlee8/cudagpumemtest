@@ -81,118 +81,6 @@ GpuDisplayWidget::~GpuDisplayWidget()
 
 }
 
-/*
-void GpuDisplayWidget::startTest(bool infinite)
-{
-	// Blah blah load test options and what not, configuration and stuff, anything that needs to be
-	// passed to the parent window/process.
-	emit testStarted(m_widgetIndex, infinite);
-
-	startButton->setEnabled(false);
-	startLoopButton->setEnabled(false);
-	stopButton->setEnabled(true);
-
-	// Setup GPU thread
-	gpuThread = new QtGpuThread(tests);
-
-	connect(gpuThread, SIGNAL(failed(int, QString)), this, SLOT(testFailed(int, QString)));
-	connect(gpuThread, SIGNAL(passed(int, QString)), this, SLOT(testPassed(int, QString)));
-	connect(gpuThread, SIGNAL(starting(int, QString)), this, SLOT(testStarting(int, QString)));
-	connect(gpuThread, SIGNAL(finished()), this, SLOT(endTest()));
-	connect(gpuThread, SIGNAL(log(int, QString, QString)), this, SLOT(testLog(int, QString, QString)));
-
-	// Link the controller to test ended signals
-	// Notify the controller of how many tests will be performed for this widget
-	int enabledCount = 0;
-	for(int i = 0; i < tests.count(); i++)
-	{
-		if(tests[i]->testEnabled) enabledCount++;
-	}
-	m_controller->testsStarted(enabledCount);
-	connect(gpuThread, SIGNAL(ended(int, QString)), m_controller, SLOT(testEnded(int, QString)));
-
-	gpuThread->setDevice(m_widgetIndex);
-	if(infinite) gpuThread->setEndless(true);
-	gpuThread->start();
-}
-
-void GpuDisplayWidget::endTest()
-{
-	static unsigned int timesEnded = 0;
-
-	if(!stopButton->isEnabled()) return;	// Nothing to stop
-
-	if(timesEnded == 0)
-	{
-		// Is the thread already stopped? (naturally stopped)
-		// then call endTest again
-		if(!gpuThread->isRunning())
-		{
-			timesEnded += 2;
-			m_labelStopping->setText(QString("Done, click stop to reset."));
-		}
-		else
-		{
-			// Kill thread
-			gpuThread->notifyExit();
-			m_labelStopping->setText(QString("Stopping..."));
-			timesEnded++;
-		}
-	}
-	else if(timesEnded == 1)
-	{
-		// Do nothing if gpuThread is still running, otherwise increment timesEnded
-		if(!gpuThread->isRunning())
-		{
-			emit testEnded(m_widgetIndex);
-
-			m_labelStopping->setText(QString("Done, click stop again to reset."));
-			timesEnded++;
-		}
-	}
-	else if(timesEnded > 1)
-	{
-		m_labelStopping->setText(QString(""));
-
-		for(int i = 0; i < testWidgets.size(); i++)
-		{
-			testWidgets[i]->setMode(TestIconWidget::SelectMode);
-			testWidgets[i]->setStatus(TestNotStarted);
-		}
-
-		startButton->setEnabled(true);
-		startLoopButton->setEnabled(true);
-		stopButton->setEnabled(false);
-		timesEnded = 0;
-	}
-}
-
-void GpuDisplayWidget::displayLog()
-{
-	QString wtitle;
-	QTextStream t(&wtitle);
-
-	t << "Results [" << m_labelGpu->text() << "]";
-
-	ResultsDisplay *rd = new ResultsDisplay();
-	rd->setResults(log);
-	rd->setWindowTitle(wtitle);
-	rd->show();
-}
-
-QString GpuDisplayWidget::getLog()
-{
-	QString t;
-	QTextStream tt(&t);
-
-	for(int i = 0; i < log.size(); i++)
-	{
-		tt << log[i] << "\r\n";	// TODO: UNIX or CR/LF line endings
-	}
-
-	return t;
-}*/
-
 void GpuDisplayWidget::setState(Mode newState)
 {
 	// The current state controls what buttons on the bottom are available to the user.
@@ -302,17 +190,6 @@ QVector<TestInfo> GpuDisplayWidget::getTests()
 	for(int i = 0; i < testWidgets.size(); i++)
 		temp.append(testWidgets[i]->getTestInfo());
 	return temp;
-}
-
-bool GpuDisplayWidget::isTestFailed()
-{
-	for(int i = 0; i < testWidgets.size(); i++)
-	{
-		if(testWidgets[i]->getStatus() == TestFailed)
-			return true;
-	}
-
-	return false;
 }
 
 void GpuDisplayWidget::stopButtonClicked()

@@ -20,33 +20,30 @@ public:
 
 	static enum Mode { SelectingMode, StoppedMode, RunningMode };
 
-	QFont font() const { return labelGpu->font(); };
+	QFont font() const { return labelGpu->font(); }
 	void setFont(QFont const &);
 
-	int index() const { return widgetIndex; };
-	void setIndex(int idx) { widgetIndex = idx; };
+	int index() const { return widgetIndex; }
+	void setIndex(int idx) { widgetIndex = idx; }
 
-	QString getName() { return labelGpu->text(); };
+	QString getName() { return labelGpu->text(); }
 
-	void setGpuName(const QString& gpuName) { labelGpu->setText(gpuName); };
-	void setGpuMemory(const QString& gpuMemory) { labelMemory->setText(gpuMemory); };
+	void setGpuName(const QString& gpuName) { labelGpu->setText(gpuName); }
+	void setGpuMemory(const QString& gpuMemory) { labelMemory->setText(gpuMemory); }
 	void setTests(QVector<TestInfo>& aTests);
 	QVector<TestInfo> getTests();
 
 public slots:
-	void setCheckStart(const int checked) { checkStart->setChecked(checked > 0); };
+	void setCheckStart(const int checked) { checkStart->setChecked(checked > 0); }
 	void setState(Mode newState);
-	void setStoppedState() { setState(StoppedMode); };
 	
 	void testFailed(TestInfo test);
 	void testPassed(TestInfo test);
 	void testStarting(TestInfo test);
 
-	bool isChecked() { return checkStart->checkState() == Qt::Checked; };
-	bool isTestFailed();
-
 	void maskSelect(TestInfo pivot, bool mask);
 
+	void startChecked() { if(checkStart->checkState() == Qt::Checked) emit startTests(0); }
 	void stopButtonClicked();
 
 signals:

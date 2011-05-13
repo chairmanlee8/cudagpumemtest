@@ -48,23 +48,12 @@ QtGpuMemtest::QtGpuMemtest(QWidget *parent, Qt::WFlags flags)
 	ui.actionShowWizardOnStartup->setChecked(startWizard == 1);
 	customStressValue(stressTime);
 
-	// Setup the current view	
+	// Setup the current state	
 	setView(startWizard ? BasicView : AdvancedView);
+	setProgress(NoProgress);
 
 	// List CUDA devices
 	ui.actionRelist->trigger();
-
-	// Temporary
-	/*allTestsDone = true;
-	stressTestsRunning = 0;
-	stressTimer = new QTimer();
-	stressTimer->setSingleShot(true);
-	connect(stressTimer, SIGNAL(timeout()), this, SLOT(stressTestEnded()));
-	stressSubTimer = new QTimer();
-	stressSubTimer->setSingleShot(false);
-	stressSubTimer->setInterval(1000);
-	stressTesting = false;
-	connect(stressSubTimer, SIGNAL(timeout()), this, SLOT(stressTestProgress()));*/
 }
 
 QtGpuMemtest::~QtGpuMemtest()
@@ -152,23 +141,18 @@ void QtGpuMemtest::checkAllDevices(int checked)
 
 void QtGpuMemtest::startChecked()
 {
-	/*for(int i = 0; i < deviceWidgets.count(); i++)
+	for(int i = 0; i < deviceWidgets.count(); i++)
 	{
-		if(deviceWidgets[i]->isChecked())
-		{
-			deviceWidgets[i]->startTestOnce();
-		}
-	}*/
+		deviceWidgets[i]->startChecked();
+	}
 }
 
 void QtGpuMemtest::stopAll()
 {
-	/*for(int i = 0; i < deviceWidgets.count(); i++)
+	for(int i = 0; i < deviceWidgets.count(); i++)
 	{
-		deviceWidgets[i]->endTest();
+		deviceWidgets[i]->stopButtonClicked();
 	}
-
-	stressTestsRunning = 0;*/
 }
 
 void QtGpuMemtest::widgetStartTests(int infinite)
@@ -176,6 +160,9 @@ void QtGpuMemtest::widgetStartTests(int infinite)
 	int widgetIndex = ((GpuDisplayWidget*)sender())->index();
 	QtGpuThread *gpuThread = new QtGpuThread(((GpuDisplayWidget*)sender())->getTests());
 
+	deviceWidgets[widgetIndex]->setCheckStart(true);
+
+	testThreads.remove(widgetIndex);
 	testThreads.insert(widgetIndex, gpuThread);
 
 	((GpuDisplayWidget*)sender())->setState(GpuDisplayWidget::RunningMode);
@@ -190,6 +177,8 @@ void QtGpuMemtest::widgetStartTests(int infinite)
 	gpuThread->setDevice(widgetIndex);
 	gpuThread->setEndless((bool)infinite);
 	gpuThread->start();
+
+	setProgress(AdvancedProgress);
 }
 
 void QtGpuMemtest::widgetStopTests()
@@ -201,7 +190,7 @@ void QtGpuMemtest::widgetStopTests()
 void QtGpuMemtest::widgetTestsEnded()
 {
 	int widgetIndex = ((QtGpuThread*)sender())->deviceIndex();
-	testThreads.remove(widgetIndex);
+	/*testThreads.remove(widgetIndex);*/
 	deviceWidgets[widgetIndex]->setState(GpuDisplayWidget::StoppedMode);
 }
 
@@ -209,135 +198,33 @@ void QtGpuMemtest::widgetTestsEnded()
 // Aggregate test options
 //
 
-/*void QtGpuMemtest::quickTest()
+void QtGpuMemtest::quickTest()
 {
-	for(int i = 0; i < tests.count(); i++)
-	{
-		tests[i].testEnabled = (i < 6);
-	}
+	QVector<TestInfo> quickTests;
 
-	// current configuration for a quick test is tests 1-8 for each GPU, same as the template tests
+	quickTests.push_back(tests[0]);
+	quickTests.push_back(tests[1]);
+	quickTests.push_back(tests[2]);
+	quickTests.push_back(tests[3]);
+	quickTests.push_back(tests[4]);
+
+	// For every device start a thread
 	for(int i = 0; i < deviceWidgets.count(); i++)
 	{
-		deviceWidgets[i]->setTests(tests);
-		deviceWidgets[i]->startTestOnce();
+		QtGpuThread *gpuThread = new QtGpuThread(quickTests);
+		gpuThread->setDevice(deviceWidgets[i]->index());
+
+		testThreads.remove(deviceWidgets[i]->index());
+		testThreads.insert(deviceWidgets[i]->index(), gpuThread);
+
+		connect(gpuThread, SIGNAL(finished()), this, SLOT(quickTestEnded()));
+		connect(gpuThread, SIGNAL(terminated()), this, SLOT(quickTestEnded()));
 	}
 }
 
-void QtGpuMemtest::stressTest()
+void QtGpuMemtest::quickTestEnded()
 {
-	stressTesting = true;
-
-	for(int i = 0; i < tests.count(); i++)
-	{
-		tests[i].testEnabled = (tests[i].testName == tr("Test10 [Stress test]"));
-	}
-
-	// set all tests to stress test then go infinite and set a timer
-	for(int i = 0; i < deviceWidgets.count(); i++)
-	{
-		deviceWidgets[i]->setTests(tests);
-		deviceWidgets[i]->startTestInfinite();
-		stressTestsRunning++;
-	}
-
-	// start the timer and configure the progress bar
-	stressTimer->setInterval(ui.customStressDial->value() * 60 * 1000);
-	stressTimer->start();
-	ui.progressBarOverall->reset();
-	ui.progressBarOverall->setMaximum(ui.customStressDial->value() * 60 + 5);
-	ui.progressBarOverall->setValue(0);
-	stressSubTimer->start();
-}*/
-
-//
-// Test controller
-//
-
-/*void QtGpuMemtest::testsStarted(int n)
-{
-	if(stressTestsRunning == 0)	// stress test has it's own special progress bar handlers
-	{
-		// Reset and configure the progress bar
-		if(allTestsDone)
-		{
-			ui.progressBarOverall->setMaximum(0);
-			ui.progressBarOverall->setValue(0);
-		}
-
-		// Disable basic view controls
-		ui.customStressTestButton->setEnabled(false);
-		ui.customStressDial->setEnabled(false);
-		ui.quickTestButton->setEnabled(false);
-
-		ui.progressBarOverall->setMaximum(ui.progressBarOverall->maximum() + n);
-		allTestsDone = false;
-	}
 }
-
-void QtGpuMemtest::testEnded(const int index, QString testName)
-{
-	// Update progress bar progress, if all units done then go to results
-	if(stressTestsRunning == 0) // again, defer stress test progress handling
-	{
-		ui.progressBarOverall->setValue(ui.progressBarOverall->value() + 1);
-	}
-
-	if((stressTesting && stressTestsRunning == 0) || (ui.progressBarOverall->value() == ui.progressBarOverall->maximum()))
-	{
-		stressTesting = false;
-		stressTimer->stop();
-		stressSubTimer->stop();
-
-		// Reset progress bar, go to results
-		ui.progressBarOverall->reset();
-		allTestsDone = true;
-
-		// Reset disabled basic view controls
-		ui.customStressTestButton->setEnabled(true);
-		ui.customStressDial->setEnabled(true);
-		ui.quickTestButton->setEnabled(true);
-
-		// TODO: go to results
-		if(currentViewMode == BasicView)
-		{
-			// Setup results view
-			bool aTestFailed = false;
-			for(int i = 0; i < deviceWidgets.count(); i++)
-			{
-				if(deviceWidgets[i]->isTestFailed())
-					aTestFailed = true;
-			}
-
-			if(aTestFailed)
-			{
-				ui.labelPassFail->setText(tr("One or more GPUs failed to pass the memory tests."));
-			}
-			else
-			{
-				ui.labelPassFail->setText(tr("All GPUs are OK! Passed the memory test."));
-			}
-
-			setView(BasicResultsView);
-			// AdvancedResultsView is the same as AdvancedView lol
-		}
-	}
-}*/
-
-/*void QtGpuMemtest::stressTestProgress()
-{
-	ui.progressBarOverall->setValue(ui.progressBarOverall->value() + 1);
-}
-
-void QtGpuMemtest::stressTestEnded()
-{
-	// Stop the stress tests
-	for(int i = 0; i < deviceWidgets.count(); i++)
-	{
-		deviceWidgets[i]->endTest();
-		stressTestsRunning--;
-	}
-}*/
 
 //
 // QtGpuMemtest Slots
@@ -371,7 +258,7 @@ void QtGpuMemtest::customStressValue(int minutes)
 }
 
 //
-// View Management
+// State Management
 //
 
 void QtGpuMemtest::setView(ViewMode viewMode)
@@ -424,6 +311,61 @@ void QtGpuMemtest::setView(ViewMode viewMode)
 		ui.actionSwitchView->setEnabled(false);
 	else
 		ui.actionSwitchView->setEnabled(true);
+}
+
+void QtGpuMemtest::setProgress(ProgressMode progressMode)
+{
+	// If tests are running, disable the relevant controls
+	bool predicate = progressMode == NoProgress;
+
+	ui.quickTestButton->setEnabled(predicate);
+	ui.customStressTestButton->setEnabled(predicate);
+	ui.customStressDial->setEnabled(predicate);
+	ui.actionStartChecked->setEnabled(predicate);
+	ui.progressBarOverall->setEnabled(predicate);
+	ui.actionSwitchView->setEnabled(predicate);
+
+	switch(progressMode)
+	{
+		case NoProgress:
+			{
+				ui.progressBarOverall->setRange(0, 1);
+				ui.progressBarOverall->setValue(0);
+			}
+			break;
+		case AdvancedProgress:
+			{
+				ui.progressBarOverall->setRange(0, 0);
+				ui.progressBarOverall->reset();
+			}
+			break;
+		case QuickProgress:
+			{
+				int totalParts = 0;
+				for(int i = 0; i < testThreads.count(); i++)
+				{
+					totalParts += testThreads[testThreads.keys()[i]]->totalProgressParts();
+				}
+
+				ui.progressBarOverall->setRange(0, totalParts - 1);
+				ui.progressBarOverall->setValue(0);
+			}
+			break;
+		case StressProgress:
+			{
+			}
+			break;
+	}
+
+	currentProgressMode = progressMode;
+}
+
+void QtGpuMemtest::progressIncrement()
+{
+	if(currentProgressMode == QuickProgress)
+	{
+		ui.progressBarOverall->setValue(ui.progressBarOverall->value() + 1);
+	}
 }
 
 void QtGpuMemtest::switchView()

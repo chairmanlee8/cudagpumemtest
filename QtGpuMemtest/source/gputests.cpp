@@ -56,16 +56,7 @@ void QtGpuThread::run_tests_impl(char* ptr, unsigned int tot_num_blocks)
 	// Run each test and do some other stuff as described in the flowchart
 	for(int i = 0; i < tests.size(); i++)
 	{
-		if(terminationFlag)
-		{
-			// Emit all the test ended flags so progress updates correctly
-			for(int j = i; j < tests.size(); j++)
-			{
-				if(tests[j].testEnabled)
-					emit testEnded(tests[j]);
-			}
-			break;
-		}
+		if(terminationFlag)	break;
 		if(!tests[i].testEnabled) continue;
 
 		//emit log(device, tests[i].testName, QString("Test started."));
@@ -126,7 +117,21 @@ void QtGpuThread::run_tests_impl(char* ptr, unsigned int tot_num_blocks)
 		//TODO: I commented the emit's here out because stress test will produce too many of these
 		//emit log(device, tests[i].testName, QString("Test ended."));
 		emit testEnded(tests[i]);
+		emit progressPart();
 	}
+}
+
+int QtGpuThread::totalProgressParts()
+{
+	// For now it is just the number of enabled tests
+	int parts = 0;
+	for(int i = 0; i < tests.size(); i++)
+	{
+		if(tests[i].testEnabled)
+			parts++;
+	}
+
+	return parts;
 }
 
 // this function is for general errors that aren't bound to any specific test

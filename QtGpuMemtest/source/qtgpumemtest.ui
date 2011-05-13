@@ -117,14 +117,14 @@
           <item>
            <widget class="QLabel" name="labelGpuTemperatures">
             <property name="text">
-             <string>GPU Temperatures:</string>
+             <string>GPU Temperatures: Only supported on Tesla units.</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QLabel" name="labelFanSpeeds">
             <property name="text">
-             <string>GPU Fan Speeds:</string>
+             <string>GPU Fan Speeds: Only supported on Tesla units.</string>
             </property>
            </widget>
           </item>

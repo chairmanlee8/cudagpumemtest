@@ -15,7 +15,6 @@
 
 #include "gputests.h"
 
-enum ViewMode { BasicView, AdvancedView, BasicResultsView, AdvancedResultsView, NoDevicesView };
 class QtGpuMemtest : public QMainWindow
 {
 	Q_OBJECT
@@ -24,9 +23,14 @@ public:
 	QtGpuMemtest(QWidget *parent = 0, Qt::WFlags flags = 0);
 	~QtGpuMemtest();
 
+	static enum ViewMode { BasicView, AdvancedView, BasicResultsView, AdvancedResultsView, NoDevicesView };
+	static enum ProgressMode { NoProgress, AdvancedProgress, QuickProgress, StressProgress };
+
 public slots:
 	void customStressValue(int minutes);
+
 	void setView(ViewMode viewMode);
+	void setProgress(ProgressMode progressMode);
 
 	// some menu and toolbar functions
 	void copyResults();
@@ -41,23 +45,16 @@ public slots:
 	void stopAll();
 	void returnHome() { setView(BasicView); };
 
-	// test controller
-	/*void startTests(int deviceIdx, QVector<TestInfo>& instanceTests, bool infinite = false);
-	void endTests(int deviceIdx);*/
-
-	// test controller, temporary solution by catching signals from the advanced views
-	/*void testsStarted(int n);
-	void testEnded(const int index, QString testName);*/
-	/*void stressTestEnded();
-	void stressTestProgress();*/
-
 	// Aggregate test options
-	/*void quickTest();
-	void stressTest();*/
+	void quickTest();
+	void quickTestEnded();
+	/*void stressTest();*/
 
 	void widgetStartTests(int infinite);
 	void widgetStopTests();
 	void widgetTestsEnded();
+
+	void progressIncrement();
 
 	//void widgetDisplayResults();
 
@@ -65,16 +62,15 @@ private:
 	Ui::QtGpuMemtestClass ui;
 
 	ViewMode					currentViewMode;
+	ProgressMode				currentProgressMode;
+
 	QList<GpuDisplayWidget*>	deviceWidgets;
 	QList<cudaDeviceProp*>		devices;
 	QMap<int, QtGpuThread*>		testThreads;
 	QVector<TestInfo>			tests;				// default tests (default template)
 
-	/*bool allTestsDone;
-	QTimer* stressTimer;
-	QTimer* stressSubTimer;
-	int stressTestsRunning;
-	bool stressTesting;*/
+	QTimer*						pollTimer;			// 1 second poll timer for use in progress checking
+	long						elapsedTime;
 };
 
 #endif // QTGPUMEMTEST_H
