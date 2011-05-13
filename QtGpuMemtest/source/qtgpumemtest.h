@@ -48,7 +48,8 @@ public slots:
 	// Aggregate test options
 	void quickTest();
 	void quickTestEnded();
-	/*void stressTest();*/
+	void stressTest();
+	void stressTestEnded();
 
 	void widgetStartTests(int infinite);
 	void widgetStopTests();

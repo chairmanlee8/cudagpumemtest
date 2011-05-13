@@ -149,9 +149,9 @@ void QtGpuMemtest::startChecked()
 
 void QtGpuMemtest::stopAll()
 {
-	for(int i = 0; i < deviceWidgets.count(); i++)
+	for(int i = 0; i < testThreads.count(); i++)
 	{
-		deviceWidgets[i]->stopButtonClicked();
+		testThreads[testThreads.keys()[i]]->notifyExit();
 	}
 }
 
@@ -192,6 +192,21 @@ void QtGpuMemtest::widgetTestsEnded()
 	int widgetIndex = ((QtGpuThread*)sender())->deviceIndex();
 	/*testThreads.remove(widgetIndex);*/
 	deviceWidgets[widgetIndex]->setState(GpuDisplayWidget::StoppedMode);
+
+	bool existsRunning = false;
+	for(int i = 0; i < testThreads.count(); i++)
+	{
+		if(testThreads[testThreads.keys()[i]]->isRunning())
+		{
+			existsRunning = true;
+			break;
+		}
+	}
+
+	if(!existsRunning)
+	{
+		setProgress(NoProgress);
+	}
 }
 
 //
@@ -219,11 +234,73 @@ void QtGpuMemtest::quickTest()
 
 		connect(gpuThread, SIGNAL(finished()), this, SLOT(quickTestEnded()));
 		connect(gpuThread, SIGNAL(terminated()), this, SLOT(quickTestEnded()));
+		connect(gpuThread, SIGNAL(progressPart()), this, SLOT(progressIncrement()));
+
+		gpuThread->start();
 	}
+
+	setProgress(QuickProgress);
 }
 
 void QtGpuMemtest::quickTestEnded()
 {
+	bool existsRunning = false;
+	for(int i = 0; i < testThreads.count(); i++)
+	{
+		if(testThreads[testThreads.keys()[i]]->isRunning())
+		{
+			existsRunning = true;
+			break;
+		}
+	}
+
+	if(!existsRunning)
+	{
+		setProgress(NoProgress);
+		setView(BasicResultsView);
+	}
+}
+
+void QtGpuMemtest::stressTest()
+{
+	QVector<TestInfo> stressTests;
+	stressTests.push_back(tests[10]);
+
+	for(int i = 0; i < deviceWidgets.count(); i++)
+	{
+		QtGpuThread *gpuThread = new QtGpuThread(stressTests);
+		gpuThread->setDevice(deviceWidgets[i]->index());
+		gpuThread->setEndless(true);
+
+		testThreads.remove(deviceWidgets[i]->index());
+		testThreads.insert(deviceWidgets[i]->index(), gpuThread);
+
+		connect(gpuThread, SIGNAL(finished()), this, SLOT(quickTestEnded()));	// Not a typo, just borrowing quickTestEnded code
+		connect(gpuThread, SIGNAL(terminated()), this, SLOT(quickTestEnded()));
+
+		gpuThread->start();
+	}
+
+	pollTimer = new QTimer();
+	pollTimer->setInterval(1000);
+	pollTimer->setSingleShot(false);
+	elapsedTime = 0;
+
+	connect(pollTimer, SIGNAL(timeout()), this, SLOT(progressIncrement()));
+	setProgress(StressProgress);
+
+	pollTimer->start();
+}
+
+void QtGpuMemtest::stressTestEnded()
+{
+	pollTimer->stop();
+	delete pollTimer;
+
+	for(int i = 0; i < testThreads.count(); i++)
+	{
+		testThreads[testThreads.keys()[i]]->notifyExit();
+	}
 }
 
 //
@@ -347,12 +424,14 @@ void QtGpuMemtest::setProgress(ProgressMode progressMode)
 					totalParts += testThreads[testThreads.keys()[i]]->totalProgressParts();
 				}
 
-				ui.progressBarOverall->setRange(0, totalParts - 1);
+				ui.progressBarOverall->setRange(0, totalParts);
 				ui.progressBarOverall->setValue(0);
 			}
 			break;
 		case StressProgress:
 			{
+				ui.progressBarOverall->setRange(0, 60 * ui.customStressDial->value());
+				ui.progressBarOverall->setValue(0);
 			}
 			break;
 	}
@@ -365,6 +444,13 @@ void QtGpuMemtest::progressIncrement()
 	if(currentProgressMode == QuickProgress)
 	{
 		ui.progressBarOverall->setValue(ui.progressBarOverall->value() + 1);
+	}
+	else if(currentProgressMode == StressProgress)
+	{
+		if(elapsedTime++ == ui.customStressDial->value() * 60)
+			emit stressTestEnded();
+
+		ui.progressBarOverall->setValue(elapsedTime);
 	}
 }
 
@@ -425,26 +511,3 @@ void QtGpuMemtest::exportResults()
 
 	fout.close();*/
 }
-
-/*void QtGpuMemtest::handleBlockingError(int deviceIdx, int err, int cudaErr, QString line, QString file)
-{
-	QString errMessage;
-	QTextStream(&errMessage) << "From line " << line << " in file " << file << ":\n";
-
-	if(err == 0) QTextStream(&errMessage) << "General error code " << err << ".";
-	else QTextStream(&errMessage) << "CUDA error code " << cudaErr << ".";
-
-	QMessageBox::critical(this, "Error", errMessage);
-	testThreads.remove(deviceIdx);
-}
-
-void QtGpuMemtest::handleNonBlockingError(int deviceIdx, int warn, QString line, QString file)
-{
-}
-
-void QtGpuMemtest::handleProgress(int deviceIdx, int testNo, int action)
-{
-	QString progressMessage;
-	QTextStream(&progressMessage) << deviceIdx << ": " << testNo << " action " << action;
-	QMessageBox::information(this, "Progress Notification", progressMessage);
-}*/
