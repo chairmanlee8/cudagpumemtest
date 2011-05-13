@@ -47,7 +47,7 @@ public slots:
 
 	// Aggregate test options
 	void quickTest();
-	void quickTestEnded();
+	void basicTestEnded();
 	void stressTest();
 	void stressTestEnded();
 
@@ -57,7 +57,7 @@ public slots:
 
 	void progressIncrement();
 
-	//void widgetDisplayResults();
+	void updateResults();
 
 private:
 	Ui::QtGpuMemtestClass ui;

@@ -54,6 +54,9 @@ public:
 
 	int totalProgressParts();
 
+	int getNumErrors() { return errorStore.count(); }
+	QList<MemoryError> getErrors() { return errorStore; }
+
 public slots:
 	void notifyExit() { terminationFlag = true; }
 	void setEndless(bool b)	{ infiniteFlag = b;	}
@@ -72,8 +75,9 @@ protected:
 private:
 	unsigned int		device;
 	QVector<TestInfo>	tests;
+	QList<MemoryError>	errorStore;
 
-	MemoryError			*detectedErrors;
+	MemoryError			*detectedErrors;	// This is for CUDA kernels
 	int					*numberErrors;
 
 	bool				terminationFlag;

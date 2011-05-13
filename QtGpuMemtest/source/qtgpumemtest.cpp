@@ -206,6 +206,7 @@ void QtGpuMemtest::widgetTestsEnded()
 	if(!existsRunning)
 	{
 		setProgress(NoProgress);
+		updateResults();
 	}
 }
 
@@ -232,8 +233,8 @@ void QtGpuMemtest::quickTest()
 		testThreads.remove(deviceWidgets[i]->index());
 		testThreads.insert(deviceWidgets[i]->index(), gpuThread);
 
-		connect(gpuThread, SIGNAL(finished()), this, SLOT(quickTestEnded()));
-		connect(gpuThread, SIGNAL(terminated()), this, SLOT(quickTestEnded()));
+		connect(gpuThread, SIGNAL(finished()), this, SLOT(basicTestEnded()));
+		connect(gpuThread, SIGNAL(terminated()), this, SLOT(basicTestEnded()));
 		connect(gpuThread, SIGNAL(progressPart()), this, SLOT(progressIncrement()));
 
 		gpuThread->start();
@@ -242,7 +243,7 @@ void QtGpuMemtest::quickTest()
 	setProgress(QuickProgress);
 }
 
-void QtGpuMemtest::quickTestEnded()
+void QtGpuMemtest::basicTestEnded()
 {
 	bool existsRunning = false;
 	for(int i = 0; i < testThreads.count(); i++)
@@ -257,6 +258,7 @@ void QtGpuMemtest::quickTestEnded()
 	if(!existsRunning)
 	{
 		setProgress(NoProgress);
+		updateResults();
 		setView(BasicResultsView);
 	}
 }
@@ -275,8 +277,8 @@ void QtGpuMemtest::stressTest()
 		testThreads.remove(deviceWidgets[i]->index());
 		testThreads.insert(deviceWidgets[i]->index(), gpuThread);
 
-		connect(gpuThread, SIGNAL(finished()), this, SLOT(quickTestEnded()));	// Not a typo, just borrowing quickTestEnded code
-		connect(gpuThread, SIGNAL(terminated()), this, SLOT(quickTestEnded()));
+		connect(gpuThread, SIGNAL(finished()), this, SLOT(basicTestEnded()));
+		connect(gpuThread, SIGNAL(terminated()), this, SLOT(basicTestEnded()));
 
 		gpuThread->start();
 	}
@@ -300,6 +302,62 @@ void QtGpuMemtest::stressTestEnded()
 	for(int i = 0; i < testThreads.count(); i++)
 	{
 		testThreads[testThreads.keys()[i]]->notifyExit();
+	}
+}
+
+void QtGpuMemtest::updateResults()
+{
+	int num_rows = 0;
+
+	for(int i = 0; i < testThreads.count(); i++)
+		num_rows += testThreads[testThreads.keys()[i]]->getNumErrors();
+
+	if(num_rows > 0)
+	{
+		ui.labelPassFail->setText(tr("Failed"));
+	}
+	else
+	{
+		ui.labelPassFail->setText(tr("Passed"));
+	}
+
+	ui.resultsTable->setRowCount(num_rows);
+	ui.resultsTable->setColumnCount(5);
+
+	QStringList header;
+	header << "Device" << "Address" << "Expected Value" << "Actual Value" << "Second Read";
+	ui.resultsTable->clear();
+	ui.resultsTable->setHorizontalHeaderLabels(header);
+	ui.resultsTable->setColumnWidth(0, 50);
+
+	int r = 0;
+	for(int i = 0; i < testThreads.count(); i++)
+	{
+		QList<MemoryError> errors = testThreads[testThreads.keys()[i]]->getErrors();
+		int k = testThreads[testThreads.keys()[i]]->getNumErrors();
+
+		for(int j = 0; j < k; j++)
+		{
+			QString base0, base1, base2, base3, base4;
+			QTextStream sout0(&base0), sout1(&base1), sout2(&base2), sout3(&base3), sout4(&base4);
+
+			sout0 << testThreads[testThreads.keys()[i]]->deviceIndex();
+			ui.resultsTable->setItem(r, 0, new QTableWidgetItem(base0));
+
+			sout1 << "0x" << qSetFieldWidth(8) << qSetPadChar('0') << hex << errors[j].addr;			
+			ui.resultsTable->setItem(r, 1, new QTableWidgetItem(base1));
+
+			sout2 << "0x" << qSetFieldWidth(8) << qSetPadChar('0') << hex << errors[j].expected;
+			ui.resultsTable->setItem(r, 2, new QTableWidgetItem(base2));
+
+			sout3 << "0x" << qSetFieldWidth(8) << qSetPadChar('0') << hex << errors[j].current;
+			ui.resultsTable->setItem(r, 3, new QTableWidgetItem(base3));
+
+			sout4 << "0x" << qSetFieldWidth(8) << qSetPadChar('0') << hex << errors[j].second_read;
+			ui.resultsTable->setItem(r, 4, new QTableWidgetItem(base4));
+
+			r++;
+		}
 	}
 }
 
@@ -395,6 +453,7 @@ void QtGpuMemtest::setProgress(ProgressMode progressMode)
 	// If tests are running, disable the relevant controls
 	bool predicate = progressMode == NoProgress;
 
+	ui.actionRelist->setEnabled(predicate);
 	ui.quickTestButton->setEnabled(predicate);
 	ui.customStressTestButton->setEnabled(predicate);
 	ui.customStressDial->setEnabled(predicate);
@@ -473,23 +532,32 @@ void QtGpuMemtest::switchView()
 
 void QtGpuMemtest::copyResults()
 {
-	/*QString masterOutput;
+	QString masterOutput;
 	QTextStream sout(&masterOutput);
 
-	for(int i = 0; i < deviceWidgets.count(); i++)
+	for(int i = 0; i < testThreads.count(); i++)
 	{
-		GpuDisplayWidget* thisWidget = deviceWidgets[i];
-		sout << ">>> " << thisWidget->getName() << "\r\n\r\n" << thisWidget->getLog() << "\r\n\r\n";
+		QList<MemoryError> errors = testThreads[testThreads.keys()[i]]->getErrors();
+		sout << "Device " << testThreads[testThreads.keys()[i]]->deviceIndex() << " has " << errors.count() << " errors." << endl;
+
+		for(int j = 0; j < errors.count(); j++)
+		{
+			sout << "Address 0x" << qSetFieldWidth(8) << qSetPadChar('0') << hex << errors[j].addr;
+			sout << " expected 0x" << qSetFieldWidth(8) << qSetPadChar('0') << hex << errors[j].expected;
+			sout << " returned 0x" << qSetFieldWidth(8) << qSetPadChar('0') << hex << errors[j].current;
+			sout.reset();
+			sout << endl;
+		}
 	}
 
 	QClipboard *cb = QApplication::clipboard();
-	cb->setText(masterOutput);*/
+	cb->setText(masterOutput);
 }
 
 void QtGpuMemtest::exportResults()
 {
 	// Select file
-	/*QString fileName = QFileDialog::getSaveFileName(this, tr("Export Results As..."));
+	QString fileName = QFileDialog::getSaveFileName(this, tr("Export Results As..."));
 	QFile fout(fileName);
 
 	if(fileName == QString::null)
@@ -503,11 +571,20 @@ void QtGpuMemtest::exportResults()
 
 	QTextStream sout(&fout);
 
-	for(int i = 0; i < deviceWidgets.count(); i++)
+	for(int i = 0; i < testThreads.count(); i++)
 	{
-		GpuDisplayWidget* thisWidget = deviceWidgets[i];
-		sout << ">>> " << thisWidget->getName() << "\r\n\r\n" << thisWidget->getLog() << "\r\n\r\n";
+		QList<MemoryError> errors = testThreads[testThreads.keys()[i]]->getErrors();
+		sout << "Device " << testThreads[testThreads.keys()[i]]->deviceIndex() << " has " << errors.count() << " errors." << endl;
+
+		for(int j = 0; j < errors.count(); j++)
+		{
+			sout << "Address 0x" << qSetFieldWidth(8) << qSetPadChar('0') << hex << errors[j].addr;
+			sout << " expected 0x" << qSetFieldWidth(8) << qSetPadChar('0') << hex << errors[j].expected;
+			sout << " returned 0x" << qSetFieldWidth(8) << qSetPadChar('0') << hex << errors[j].current;
+			sout.reset();
+			sout << endl;
+		}
 	}
 
-	fout.close();*/
+	fout.close();
 }

@@ -3,6 +3,7 @@
 QtGpuThread::QtGpuThread(QVector<TestInfo>& aTests, QObject* parent)
 	: QThread(), tests(aTests), terminationFlag(false), infiniteFlag(false)
 {
+	errorStore.clear();
 }
 
 // equivalent to thread_func in the old code
@@ -59,7 +60,6 @@ void QtGpuThread::run_tests_impl(char* ptr, unsigned int tot_num_blocks)
 		if(terminationFlag)	break;
 		if(!tests[i].testEnabled) continue;
 
-		//emit log(device, tests[i].testName, QString("Test started."));
 		emit testStarting(tests[i]);
 
 		TestInputParams * tip = new TestInputParams;
@@ -92,30 +92,18 @@ void QtGpuThread::run_tests_impl(char* ptr, unsigned int tot_num_blocks)
 			// log the result
 			if(local_count > 0)
 			{
-				// got some memory errors, record them and emit fail
-				for(int n = 0; n < local_count; n++)
-				{
-					// log each error
-					QString memError;
-					QTextStream memErrorStream(&memError);
-					memErrorStream << qSetFieldWidth(8) << qSetPadChar('0') << right << hex << "Error: Address 0x" << local_errors[n].addr << " has 0x" << local_errors[n].current << " but expected 0x" << local_errors[n].expected;
-					memErrorStream.flush();
-
-					emit log(tests[i], memError);
-				}
+				// Add to the error store
+				for(int i = 0; i < local_count; i++)
+					errorStore.push_back(MemoryError(local_errors[i]));
 
 				emit testFailed(tests[i]);
 			}
-			else
-			{
+			else 
 				emit testPassed(tests[i]);
-			}
 
 			delete [] local_errors;
 		}
 
-		//TODO: I commented the emit's here out because stress test will produce too many of these
-		//emit log(device, tests[i].testName, QString("Test ended."));
 		emit testEnded(tests[i]);
 		emit progressPart();
 	}
