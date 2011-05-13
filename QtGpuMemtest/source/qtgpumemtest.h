@@ -58,6 +58,7 @@ public slots:
 	void progressIncrement();
 
 	void updateResults();
+	void displayLogMessage(TestInfo t, QString l);
 
 private:
 	Ui::QtGpuMemtestClass ui;

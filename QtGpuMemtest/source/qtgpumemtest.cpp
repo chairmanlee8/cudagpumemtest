@@ -67,6 +67,11 @@ QtGpuMemtest::~QtGpuMemtest()
 	clearDevices();
 }
 
+void QtGpuMemtest::displayLogMessage(TestInfo t, QString l)
+{
+	QMessageBox::warning(this, tr("Error"), l);
+}
+
 //
 // Device and test management
 //
@@ -169,6 +174,7 @@ void QtGpuMemtest::widgetStartTests(int infinite)
 	connect(gpuThread, SIGNAL(testStarting(TestInfo)), deviceWidgets[widgetIndex], SLOT(testStarting(TestInfo)));
 	connect(gpuThread, SIGNAL(testFailed(TestInfo)), deviceWidgets[widgetIndex], SLOT(testFailed(TestInfo)));
 	connect(gpuThread, SIGNAL(testPassed(TestInfo)), deviceWidgets[widgetIndex], SLOT(testPassed(TestInfo)));
+	connect(gpuThread, SIGNAL(log(TestInfo, QString)), this, SLOT(displayLogMessage(TestInfo, QString)));
 
 	// Connect stopped signal
 	connect(gpuThread, SIGNAL(finished()), this, SLOT(widgetTestsEnded()));
@@ -235,6 +241,7 @@ void QtGpuMemtest::quickTest()
 
 		connect(gpuThread, SIGNAL(finished()), this, SLOT(basicTestEnded()));
 		connect(gpuThread, SIGNAL(terminated()), this, SLOT(basicTestEnded()));
+		connect(gpuThread, SIGNAL(log(TestInfo, QString)), this, SLOT(displayLogMessage(TestInfo, QString)));
 		connect(gpuThread, SIGNAL(progressPart()), this, SLOT(progressIncrement()));
 
 		gpuThread->start();
@@ -277,6 +284,7 @@ void QtGpuMemtest::stressTest()
 		testThreads.remove(deviceWidgets[i]->index());
 		testThreads.insert(deviceWidgets[i]->index(), gpuThread);
 
+		connect(gpuThread, SIGNAL(log(TestInfo, QString)), this, SLOT(displayLogMessage(TestInfo, QString)));
 		connect(gpuThread, SIGNAL(finished()), this, SLOT(basicTestEnded()));
 		connect(gpuThread, SIGNAL(terminated()), this, SLOT(basicTestEnded()));
 
