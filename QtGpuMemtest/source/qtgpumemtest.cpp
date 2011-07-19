@@ -326,7 +326,7 @@ void QtGpuMemtest::updateResults()
 	}
 	else
 	{
-		ui.labelPassFail->setText(tr("Passed"));
+		ui.labelPassFail->setText(tr("No errors detected."));
 	}
 
 	ui.resultsTable->setRowCount(num_rows);
@@ -379,6 +379,7 @@ void QtGpuMemtest::about()
 	                   QString("A GPU memory test utility for NVIDIA and AMD GPUs using well established patterns "
 	                           "from memtest86/memtest86+ as well as additional stress tests. The tests are designed "
 	                           "to find hardware and soft errors. The code is written in CUDA and OpenCL. "
+							   "\r\n\r\nFor any information contact Guochun Shi at gshi@ncsa.uiuc.edu."
 	                           "\r\n\r\nhttp://cudagpumemtest.sf.net"));
 }
 
@@ -448,7 +449,8 @@ void QtGpuMemtest::setView(ViewMode viewMode)
 	ui.actionCheckAll->setEnabled(enableAdvancedControls);
 	ui.actionCheckNone->setEnabled(enableAdvancedControls);
 	ui.actionStartChecked->setEnabled(enableAdvancedControls);
-	ui.actionStopAll->setEnabled(true);
+	ui.actionStopAll->setEnabled(currentViewMode != BasicResultsView);
+	ui.actionRelist->setEnabled(currentViewMode != BasicResultsView);
 
 	if(currentViewMode != BasicView && currentViewMode != AdvancedView)
 		ui.actionSwitchView->setEnabled(false);

@@ -28,7 +28,7 @@
        <enum>QFrame::NoFrame</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="pageBasic">
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -312,7 +312,7 @@
      <normaloff>:/QtGpuMemtest/resources/loop_24x24.png</normaloff>:/QtGpuMemtest/resources/loop_24x24.png</iconset>
    </property>
    <property name="text">
-    <string>Relist</string>
+    <string>Rescan</string>
    </property>
    <property name="toolTip">
     <string>Relist devices.</string>
