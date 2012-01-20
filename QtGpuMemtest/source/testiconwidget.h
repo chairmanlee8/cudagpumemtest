@@ -12,7 +12,7 @@ public:
 	TestIconWidget(TestInfo& aTestInfo, QWidget *parent = 0);
 	~TestIconWidget();
 
-	static enum Mode { SelectMode, DisplayMode };
+	enum Mode { SelectMode, DisplayMode };
 
 	virtual QSize sizeHint() const;
 

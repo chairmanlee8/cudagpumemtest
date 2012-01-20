@@ -46,7 +46,7 @@ protected:
 	void run_tests_impl(char* ptr, unsigned int tot_num_blocks);
 
 public:
-	QtGpuThread(QVector<TestInfo>& aTests, QObject* parent = 0);
+	QtGpuThread(QVector<TestInfo> aTests, QObject* parent = 0);
 	QtGpuThread(QObject* parent = 0) : QThread(parent) { };
 
 	void setDevice(int idx)	{ device = idx;	}
@@ -90,7 +90,12 @@ private:
 // CUDA tests/kernel defines only
 //
 
-#include <windows.h>
+#ifndef __unix__
+	#include <windows.h>
+#else
+	#include <sys/time.h>
+	#include <unistd.h>
+#endif
 
 #define SYNC_CUERR do { cudaError_t __err; cudaThreadSynchronize(); \
 	if((__err = cudaGetLastError()) != cudaSuccess) return __err; \

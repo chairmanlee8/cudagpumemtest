@@ -2,14 +2,14 @@
 
 unsigned int get_random_num(void)
 {
-	/*struct timeval t0;
-	if (gettimeofday(&t0, NULL) !=0){
-	fprintf(stderr, "ERROR: gettimeofday() failed\n");
-	exit(ERR_GENERAL);
-	}*/
+#ifdef __unix__
+	struct timeval t0;
+	gettimeofday(&t0, NULL);
 
-	//unsigned int seed= (unsigned int)t0.tv_sec;
+	unsigned int seed= (unsigned int)t0.tv_sec;
+#else
 	unsigned int seed = (unsigned int) GetTickCount();
+#endif
 	srand(seed);
 
 	return rand();
@@ -17,14 +17,14 @@ unsigned int get_random_num(void)
 
 unsigned long get_random_num_long(void)
 {
-	/*struct timeval t0;
-	if (gettimeofday(&t0, NULL) !=0){
-	fprintf(stderr, "ERROR: gettimeofday() failed\n");
-	exit(ERR_GENERAL);
-	}*/
+#ifdef __unix__
+	struct timeval t0;
+	gettimeofday(&t0, NULL);
 
-	//unsigned int seed= (unsigned int)t0.tv_sec;
+	unsigned int seed= (unsigned int)t0.tv_sec;
+#else
 	unsigned int seed = (unsigned int) GetTickCount();
+#endif
 	srand(seed);
 
 	unsigned int a = rand();

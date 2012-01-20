@@ -1,6 +1,8 @@
 #ifndef QTGPUMEMTEST_H
 #define QTGPUMEMTEST_H
 
+#define sprintf_s(b,bs,sb,...) (sprintf(b,sb,__VA_ARGS__))
+
 #include <QtGui>
 #include <QVector>
 #include <QMap>
@@ -23,8 +25,8 @@ public:
 	QtGpuMemtest(QWidget *parent = 0, Qt::WFlags flags = 0);
 	~QtGpuMemtest();
 
-	static enum ViewMode { BasicView, AdvancedView, BasicResultsView, AdvancedResultsView, NoDevicesView };
-	static enum ProgressMode { NoProgress, AdvancedProgress, QuickProgress, StressProgress };
+	enum ViewMode { BasicView, AdvancedView, BasicResultsView, AdvancedResultsView, NoDevicesView };
+	enum ProgressMode { NoProgress, AdvancedProgress, QuickProgress, StressProgress };
 
 public slots:
 	void customStressValue(int minutes);

@@ -30,8 +30,9 @@ enum TestStatus { TestNotStarted, TestPassed, TestFailed, TestRunning };
 
 #include <QString>
 
-struct TestInfo
+class TestInfo
 {
+public:
 	int			testId;
 	QString		testName;
 	QString		testShortName;		// short name, no more than 2 characters long, for identifying the test in the TestIconWidget.
@@ -41,8 +42,8 @@ struct TestInfo
 	TestInfo() : testId(-1), testName(QString("")), testShortName(QString("")), testFunc(0), testEnabled(false) { };
 	TestInfo(int id, QString name, QString shortName, TestFunc func, bool e) : testId(id), testName(name), testShortName(shortName), testFunc(func), testEnabled(e) {};
 
-	bool TestInfo::operator==(const TestInfo& other) { return (testId == other.testId); };
-	bool TestInfo::operator!=(const TestInfo& other) { return !(*this == other); };
+	bool operator==(const TestInfo& other) { return (testId == other.testId); };
+	bool operator!=(const TestInfo& other) { return !(*this == other); };
 };
 
 #endif

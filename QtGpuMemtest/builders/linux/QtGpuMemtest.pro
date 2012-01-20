@@ -1,0 +1,47 @@
+CONFIG += qt
+SOURCES += ../../source/main.cpp
+SOURCES += ../../source/gpudisplaywidget.cpp
+SOURCES += ../../source/gputests.cpp
+SOURCES += ../../source/qtgpumemtest.cpp
+SOURCES += ../../source/resultsdisplay.cpp
+SOURCES += ../../source/testiconwidget.cpp
+CUDA_SOURCES += ../../source/common.cu
+CUDA_SOURCES += ../../source/test0.cu
+CUDA_SOURCES += ../../source/test1.cu
+CUDA_SOURCES += ../../source/test2.cu
+CUDA_SOURCES += ../../source/test3.cu
+CUDA_SOURCES += ../../source/test4.cu
+CUDA_SOURCES += ../../source/test5.cu
+CUDA_SOURCES += ../../source/test6.cu
+CUDA_SOURCES += ../../source/test7.cu
+CUDA_SOURCES += ../../source/test8.cu
+CUDA_SOURCES += ../../source/test9.cu
+CUDA_SOURCES += ../../source/test10.cu
+HEADERS += ../../source/common.h
+HEADERS += ../../source/gpudisplaywidget.h
+HEADERS += ../../source/gputests.h
+HEADERS += ../../source/qtgpumemtest.h
+HEADERS += ../../source/resultsdisplay.h
+HEADERS += ../../source/testiconwidget.h
+RESOURCES += ../../source/qtgpumemtest.qrc
+FORMS += ../../source/qtgpumemtest.ui
+FORMS += ../../source/resultsdisplay.ui
+CUDA_SDK = /home/andrew/NVIDIA_GPU_Computing_SDK/C
+CUDA_DIR = /usr/local/cuda
+CUDA_ARCH = sm_11
+NVCCFLAGS = --compiler-options -fno-strict-aliasing -use_fast_math --ptxas-options=-v
+INCLUDEPATH += $$CUDA_DIR/include
+INCLUDEPATH += $$CUDA_SDK/common/inc/
+INCLUDEPATH += $$CUDA_SDK/../shared/inc/
+QMAKE_LIBDIR += $$CUDA_DIR/lib
+QMAKE_LIBDIR += $$CUDA_SDK/lib
+QMAKE_LIBDIR += $$CUDA_SDK/common/lib
+LIBS += -lcudart -lcutil_i386
+TARGET = QtGpuMemtest
+cuda.input = CUDA_SOURCES
+cuda.output = ${OBJECTS_DIR}${QMAKE_FILE_BASE}_cuda.o
+cuda.commands = $$CUDA_DIR/bin/nvcc -g -G -arch=$$CUDA_ARCH -c $$NVCCFLAGS $$CUDA_INC $$LIBS ${QMAKE_FILE_NAME} -o ${QMAKE_FILE_OUT}
+
+cuda.dependcy_type = TYPE_C
+cuda.depend_command = $$CUDA_DIR/bin/nvcc -g -G -M $$CUDA_INC $$NVCCFLAGS ${QMAKE_FILE_NAME}
+QMAKE_EXTRA_UNIX_COMPILERS += cuda

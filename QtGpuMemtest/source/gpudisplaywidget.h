@@ -18,7 +18,7 @@ public:
 	GpuDisplayWidget(QWidget *parent = 0);
 	~GpuDisplayWidget();
 
-	static enum Mode { SelectingMode, StoppedMode, RunningMode };
+	enum Mode { SelectingMode, StoppedMode, RunningMode };
 
 	QFont font() const { return labelGpu->font(); }
 	void setFont(QFont const &);

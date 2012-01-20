@@ -1,6 +1,6 @@
 #include "gputests.h"
 
-QtGpuThread::QtGpuThread(QVector<TestInfo>& aTests, QObject* parent)
+QtGpuThread::QtGpuThread(QVector<TestInfo> aTests, QObject* parent)
 	: QThread(), tests(aTests), terminationFlag(false), infiniteFlag(false)
 {
 	errorStore.clear();

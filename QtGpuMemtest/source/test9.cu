@@ -32,11 +32,19 @@ test9(TestInputParams *tip, TestOutputParams *top, bool *term)
 	//DEBUG_PRINTF("sleeping for 90 minutes\n");
 	//sleep(60*90);
 	//Sleep(60*90*1000);
+	#ifdef __unix__
+	for(i = 0; i < 60*90; i++)
+	{
+		sleep(1);
+		if(*term == true) break;
+	}
+	#else
 	for(i = 0; i < 1000*9; i++)
 	{
 		Sleep(60*10);
 		if(*term == true) break;
 	}
+	#endif
 
 	for (i=0; i < tip->tot_num_blocks; i+= GRIDSIZE)
 	{
@@ -51,11 +59,19 @@ test9(TestInputParams *tip, TestOutputParams *top, bool *term)
 	//DEBUG_PRINTF("sleeping for 90 minutes\n");
 	//sleep(60*90);
 	//Sleep(60*90*1000);
+	#ifdef __unix__
+	for(i = 0; i < 60*90; i++)
+	{
+		sleep(1);
+		if(*term == true) break;
+	}
+	#else
 	for(i = 0; i < 1000*9; i++)
 	{
 		Sleep(60*10);
 		if(*term == true) break;
 	}
+	#endif
 
 	for (i=0; i < tip->tot_num_blocks; i+= GRIDSIZE)
 	{
